@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 
 
 
-class ClientTraining(ABC):
+class Client(ABC):
 
     def get_properties(self) :
         """Return set of client's properties.

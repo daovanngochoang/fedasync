@@ -2,6 +2,16 @@
 
 class MessageProcessing():
 
+    def serialize_training_msg(self):
+        """serialize the object of new epoch including all information and the global parameters 
+            and before server send to client
+        """
+    def deserialize_training_msg(self):
+        """Deserialize the training msg in rabbitmq into object when client receive
+        that msg it has information about new epoch and global parameters
+        """
+
+
     def deserialize_update_msg(self):
         """Translate the update msg received from clients
         """
