@@ -10,7 +10,6 @@ class Strategy(ABC):
         """Initialize the global parameters.
         """
 
-    @abstractmethod
     def client_selection(self) -> list[Client.id]:
         """ Implement the client selection logic by 
         """
@@ -25,27 +24,22 @@ class Strategy(ABC):
         """Evaluate the current parameters
         """
 
-    @abstractmethod
     def check_update(self):
         """Check the update condition
         """
 
-    @abstractmethod
     def is_finish(self):
         """Check if the training process is finish
         """
 
-    @abstractmethod
     def save_local_parameters(self):
         """Save local parameters before aggregate
         """
     
-    @abstractmethod
     def update_client_state(self):
         """Update client info
         """
     
-    @abstractmethod
     def manage_process(self, msg):
         """Receive message and manage updating process
         """
