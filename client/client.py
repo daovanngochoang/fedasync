@@ -1,14 +1,16 @@
 from abc import ABC, abstractmethod
 
-
-
 class Client(ABC):
+    def __init__(self) -> None:
+        id: "23432432"
 
+    
+    @abstractmethod
     def get_properties(self) :
         """Return set of client's properties.
         """
-
-    def get_parameters(self) :
+    @abstractmethod
+    def get_params(self) :
         """Return the current local model parameters.
         """
 

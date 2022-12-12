@@ -7,7 +7,7 @@ class Client:
         self.id : str = id
         self.current_epoch : int
         self.local_weights : np.array
-        self.is_finish : bool
         self.accuracy : float
         self.start_time : str
         self.finish_time : str
+        self.loss: float
