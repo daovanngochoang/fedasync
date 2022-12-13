@@ -9,6 +9,7 @@ class Server:
         """
         Start to listen to events from queue server.
         """
+        
     def stop(self):
         """Stop training and release resource
         """
