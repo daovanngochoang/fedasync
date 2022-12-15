@@ -1,8 +1,4 @@
 {
-    "noti": {
-        "id": "",
-        "epoch": ""
-},
     "global_message": {
         "chosen_id": [],
         "epoch": 1,

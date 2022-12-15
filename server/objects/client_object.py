@@ -11,5 +11,13 @@ class Client:
         self.start_time : str = None
         self.finish_time : str = None
         self.loss: float = 1.0
-        self.available : bool = True
-        
+        self.is_finished : bool = True
+    
+    def reset(self):
+        self.current_epoch = 0
+        self.local_params = None
+        self.acc = 0.0
+        self.start_time = ""
+        self.finish_time = ""
+        self.loss = 1.0
+        self.is_finished  = False

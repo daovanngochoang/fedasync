@@ -4,9 +4,11 @@ def decode_message():
     output: target object (json/ class)
     """
 
-def decode_update_params():
+def decode_update_params() -> dict:
     """Translate the update 
     """
+
+    return 
 
 
 def encode_params(params):

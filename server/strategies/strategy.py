@@ -16,7 +16,7 @@ class Strategy(ABC):
                     min_update_clients : int = 3,
                     min_fit_clients : int = 3, 
                     convergent_value : int = 0.1,
-                    time_ratial : float = 0.5
+                    time_rational : float = 0.5
                     ) -> None:
 
         self.global_params : np.ndarray = init_params
@@ -25,13 +25,10 @@ class Strategy(ABC):
         self.min_fit_clients =  min_fit_clients 
         self.min_update_clients = min_update_clients
         self.n_epochs = n_epochs
-        self.time_ratial = time_ratial
+        self.time_rational = time_rational
 
         # current server epoch
         self.current_epoch : int = 0
-        
-        # Client manager
-        self.client_manager : ClientManager = ClientManager()
         
         # the convergent condition value
         self.convergent_value : float = convergent_value 
@@ -47,6 +44,9 @@ class Strategy(ABC):
     def initialize_parameters(self):
         """Initialize the global parameters.
         """
+        self.start_time = time_now()
+        self.first_finished = ""
+        self.latest_finished = ""
         return self.global_params
 
 
@@ -65,9 +65,12 @@ class Strategy(ABC):
         """Evaluate the current parameters
         """
 
-    @abstractmethod
+    # @abstractmethod
     def check_update(self, finished_clients):
         """Check the update condition
+            1. We wait until 50% of clients are finished
+            2. After 50% clients finished => We use the time measurement technique
+            3. We also check the min clients to update simultaneously 
         """
         # finished_clients = self.client_manager.filter_finished_clients_by_epoch(self.current_epoch)
 
@@ -79,7 +82,7 @@ class Strategy(ABC):
             
             # get avg complete time
             avg = (t2 + t1)/total_finished
-            time_cond = avg + (self.time_ratial*avg)
+            time_cond = avg + (self.time_rational*avg)
 
             # get time up to now
             now = time_now()
@@ -90,26 +93,12 @@ class Strategy(ABC):
 
 
     def start_condition(self, available_clients) -> bool:
-        # n_clients = self.client_manager.get_available()
         return available_clients > self.min_fit_clients
 
-    def new_epoch(self):
-        self.start_time = time_now()
-        self.first_finished = ""
-        self.latest_finished = ""
-        return self.initialize_parameters()
 
+    def is_finish(self):
+        return self.current_epoch == self.n_epochs
 
-    def manage_update(self, finished_clients_in_current_epoch):
-        if self.check_update == True:
-            # finished_clients_in_current_epoch = self.client_manager.filter_finished_clients_by_epoch(self.current_epoch)
-            all_params = []
-            cli : Client
-            for cli in finished_clients_in_current_epoch:
-                all_params.append(cli.local_params)
-
-            self.aggregate(all_params)
-    
 
 
 

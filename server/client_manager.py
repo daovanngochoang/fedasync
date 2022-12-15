@@ -13,18 +13,26 @@ class  ClientManager:
         
 
     def add_client(self, client : Client) -> None:
+        """Add new clients
+        """
         self.client_pools[client.id] = client
 
 
     def total(self):
+        """Get total clients number
+        """
         return len(self.client_pools)
 
 
     def get_all(self) -> dict[Client.id, Client]:
+        """Get all clients
+        """
         return self.client_pools
 
 
     def filter_by_epoch(self, epoch : int) -> dict[str, Client]:
+        """Filter all clients are training in the current epoch.
+        """
         result : dict[str, Client] = {}
         client : Client
 
@@ -46,40 +54,26 @@ class  ClientManager:
                 result[client.id] = client
         
         return result
-        
-
-    def increase_epoch(self, id : Client.id) -> None:
-        """Update client's epoch 
-        """
-        # if that client exit 
-        if self.client_pools[id] != None:
-            self.client_pools[id].current_epoch += 1
-
-
-    def new_epoch_state(self, id : str, time : str):
-        """Update client starting time
-        """
-        # if that client exit 
-        if self.client_pools[id] != None:
-            self.client_pools[id].start_time = time
-            self.client_pools[id].current_epoch += 1
-            self.client_pools[id].available = False
 
 
     
-    def update_local_params(self, id : Client.id, params: np.ndarray , finish_time : str, acc : float, 
-                        loss : float, available : bool) -> None:
+    def update_local_params(self, id : Client.id, epoch:int ,params: np.ndarray, start_time: str, finish_time : str, acc : float, 
+                        loss : float) -> None:
         """Update client state when the local params are updated to server
         """
         if self.client_pools[id] != None:
             self.client_pools[id].local_params = params
+            self.client_pools[id].current_epoch = epoch
             self.client_pools[id].acc = acc
             self.client_pools[id].loss = loss
+            self.client_pools[id].start_time = start_time
             self.client_pools[id].finish_time = finish_time
-            self.client_pools[id].available = True
+            self.client_pools[id].is_finished = True
 
 
     def get_available(self):
+        """Get available clients in the pool
+        """
         n_available = 0
         client : Client
         for client in self.client_pools:
@@ -89,16 +83,14 @@ class  ClientManager:
         return n_available
     
     def save_history(self, epoch: int):
+        """Save the history states of clients over epochs that help to the analytic approaches
+        """
         self.history_state[epoch] = self.client_pools
 
 
     def reset_client_pools(self):
+        """Reset client state 
+        """
         client : Client
         for client in self.client_pools:
-            self.update_state(
-                id = client.id,
-                params=None,
-                start_time="",
-                finish_time="",
-                loss=1,
-                acc=0)
+            client.reset()

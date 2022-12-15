@@ -1,23 +1,23 @@
 
 
-
 class RoutingRules:
-    def __init__(self) -> None:
-        
-        # Binding at client queue
-        self.NEW_EPOCH : str = "client.training.fit"
-        self.CHECK_AVAILABLE_CLIENT : str = "client.available.request"
 
-        # binding at server queue
-        self.LOCAL_UPDATE : str = "update.to.server"
-        self.AVAILABLE_CLIENT_RESPONE : str = "client.available.response"
-        self.RECEIVED_NOTIFY : str = "client.received.model"
+    # Binding at client queue
+    NEW_EPOCH : str = "client.training.fit"
+    NOTIFY : str = "client.check.available"
+
+    # binding at server queue
+    LOCAL_UPDATE : str = "update.to.server"
+    CLIENTS_REGISTER : str = "register"
+    RECEIVED_NOTIFY : str = "model.received"
 
 
 
 class QueueConfig:
-    def __init__(self) -> None:
-        self.SERVER_QUEUE : str = "server_queue"
-        self.CLIENT_QUEUE : str = "client_queue"
-        self.EXCHANGE : str = "share_exchange"
+
+    SERVER_QUEUE : str = "server_queue"
+    CLIENT_QUEUE : str = "client_queue"
+    EXCHANGE : str = "share_exchange"
+    
+
 
