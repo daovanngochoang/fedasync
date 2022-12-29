@@ -1,36 +1,36 @@
-from strategy import Strategy
-from client_manager import ClientManager
-from server.objects.client_object import Client
-import numpy as np 
-from abc import ABC, abstractmethod
+from typing import Dict, List
 
+from commons.utils.weight_file_helpers import load_array, save_array
+from strategy import Strategy
+from commons.objects.client_object import Client
+from commons.config import ServerConfig
+import numpy as np
 
 class FedAvg(Strategy):
+    def __init__(self, params_file: str, n_epochs: int = 3,
+                 min_update_clients: int = 3,
+                 min_fit_clients: int = 3,
+                 convergent_value: int = 0.1,
+                 time_rational: float = 0.5) -> None:
+        super().__init__(params_file, n_epochs, min_update_clients, min_fit_clients, convergent_value, time_rational)
 
-    def __init__(self, model) -> None:
+    def select_client(self, all_clients: Dict[str, Client]) -> List[str]:
+        return [x for x in all_clients]
 
-        self.global_params : np.ndarray
-
-        self.global_model = model
-
-    
-    def initialize_parameters(self):
-        """Initialize the global parameters.
-        """
-
-
-    def client_selection(self, all_clients : dict[str, Client]) -> list[Client.id]:
-        """ Implement the client selection logic by 
-        """
-    
-    def aggregate(self, all_clients : dict[str, Client]) -> None:
+    def aggregate(self, local_param_links: List[str], join_clients: List[Client]) -> None:
         """Aggregate algorithm, update to the global model
         """
+        total_weights: np.ndarray = np.array([])
+        for link in local_param_links:
+            file_path = ServerConfig.TMP_FOLDER + link
+            local_weight = load_array(file_path)
 
-    def evaluate(self):
-        """Evaluate the current parameters
-        """
+            if len(total_weights) == 0:
+                total_weights = local_weight
+            else:
+                total_weights += local_weight
 
-    def check_update(self):
-        """Check the update condition
-        """
+        total_clients = len(join_clients)
+        avg_weights = total_weights / total_clients
+        save_array(avg_weights, ServerConfig.TMP_FOLDER+self.global_params_file)
+
