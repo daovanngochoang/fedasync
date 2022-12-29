@@ -45,7 +45,7 @@ class Server:
 
                         method_frame, header_frame, body = self.get_msg()
 
-                # check for start condition
+                # get all available 
                 n_available = self.client_manager.total()
 
                 # if enough clients => start training
@@ -63,7 +63,7 @@ class Server:
 
     def fit(self):
         """
-        Start to listen to events from queue server.
+        Start training distributed on multiple workers
         """
         # start new epoch
         self.new_epoch([])
