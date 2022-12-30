@@ -3,8 +3,8 @@ from abc import ABC, abstractmethod
 from typing import List, Dict
 from commons.objects.client_object import Client
 from commons.utils.time_helpers import *
-from commons.aws_s3_manager import *
 from commons.config import ServerConfig
+from commons.utils.weight_file_helpers import upload_file_to_awss3
 
 
 class Strategy(ABC):
@@ -46,7 +46,7 @@ class Strategy(ABC):
         self.latest_finished = ""
 
         # upload latest global model
-        upload_file(ServerConfig.TMP_FOLDER+self.global_params_file, self.global_params_file)
+        upload_file_to_awss3(self.global_params_file)
         return self.global_params_file
 
     @abstractmethod

@@ -6,7 +6,7 @@ from pika.spec import Basic, BasicProperties
 from client_manager import ClientManager
 import sys, os
 from commons.utils.message_helper import *
-from commons.aws_s3_manager import *
+from commons.utils.weight_file_helpers import *
 
 
 class Server:
@@ -15,10 +15,9 @@ class Server:
 
         self.strategy: Strategy = strategy
         self.connection: BlockingConnection = queue_connection
+
         self.channel: BlockingChannel = self.connection.channel()
         self.client_manager: ClientManager = ClientManager()
-
-        self.tmp = "./tmp/"
 
     def get_msg(self):
         method_frame, header_frame, body = self.channel.basic_get(QueueConfig.SERVER_QUEUE)
@@ -85,8 +84,8 @@ class Server:
                     # decode msg to rabbitmq msg
                     decoded_msg = decode_update_msg(body)
 
-                    # get the local params from s3
-                    download(file_name=decoded_msg.param_link, local_path=self.tmp + decoded_msg.param_link)
+                    # get the params from s3
+                    download_awss3_file(file_name=decoded_msg.param_link)
 
                     # update client stage
                     self.client_manager.update_local_params(decoded_msg)

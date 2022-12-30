@@ -33,9 +33,9 @@ def encode_global_msg(global_message : GlobalMessage) -> str:
     return body_str
 
 
-def decode_global_msg(message) -> GlobalMessage:
+def decode_global_msg(message: bytes) -> GlobalMessage:
     # Convert the message body (bytes) to a string
-    body_str = message.body.decode('utf-8')
+    body_str = message.decode('utf-8')
 
     # Parse the message body string as JSON
     body = json.loads(body_str)
@@ -48,9 +48,9 @@ def decode_global_msg(message) -> GlobalMessage:
     return output
 
 
-def decode_update_msg(message) -> UpdateMessage:
+def decode_update_msg(message: bytes) -> UpdateMessage:
     # Convert the message body (bytes) to a string
-    body_str = message.body.decode('utf-8')
+    body_str = message.decode('utf-8')
 
     # Parse the message body string as JSON
     body = json.loads(body_str)
