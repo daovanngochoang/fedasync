@@ -1,5 +1,5 @@
 from commons.config import *
-from commons.objects.client_object import Client
+from commons.objects.client import Client
 from strategies.strategy import Strategy
 from pika.adapters.blocking_connection import BlockingChannel, BlockingConnection
 from pika.spec import Basic, BasicProperties
@@ -84,8 +84,9 @@ class Server:
                     # decode msg to rabbitmq msg
                     decoded_msg = decode_update_msg(body)
 
-                    # get the params from s3
-                    download_awss3_file(file_name=decoded_msg.param_link)
+                    # get the weight and bias from s3
+                    download_awss3_file(file_name=decoded_msg.weight_file)
+                    download_awss3_file(file_name=decoded_msg.bias_file)
 
                     # update client stage
                     self.client_manager.update_local_params(decoded_msg)
@@ -96,17 +97,9 @@ class Server:
 
             # if the update condition is true
             if self.strategy.check_update(len(finished_clients)):
-                params_to_update = []
-                join_clients = []
-                cli: Client
 
-                # Get all finished clients in the current epoch
-                for cli in finished_clients:
-                    params_to_update.append(cli.params_link)
-                    join_clients.append(cli)
-
-                # Update 
-                self.strategy.aggregate(params_to_update, join_clients)
+                # Update
+                self.strategy.aggregate(finished_clients)
 
                 # Save value to history
                 self.client_manager.save_history(self.strategy.current_epoch)
@@ -127,13 +120,15 @@ class Server:
 
     def new_epoch(self, selected_clients):
         # Generate new params
-        global_params_link = self.strategy.initialize_parameters()
+        global_weight_file, global_bias_file = self.strategy.initialize_parameters()
 
         # select clients
         chosen_id = self.strategy.select_client(selected_clients)
 
         # create msg object
-        msg = GlobalMessage(chosen_id, self.strategy.current_epoch, global_params_link)
+        msg = GlobalMessage(chosen_id=chosen_id, current_epoch=self.strategy.current_epoch,
+                            n_epochs=self.strategy.n_epochs,
+                            weight_file=global_weight_file, bias_file=global_bias_file)
 
         # encode
         str_msg = encode_global_msg(msg)

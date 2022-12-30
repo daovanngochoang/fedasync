@@ -1,24 +1,28 @@
 from abc import ABC, abstractmethod
 
 from typing import List, Dict
-from commons.objects.client_object import Client
+from commons.objects.client import Client
 from commons.utils.time_helpers import *
-from commons.config import ServerConfig
-from commons.utils.weight_file_helpers import upload_file_to_awss3
+from commons.utils.weight_file_helpers import upload_file_to_awss3, save_nparray_to_file
+import uuid
 
 
 class Strategy(ABC):
 
     def __init__(self,
-                 params_file,
+                 model,
                  n_epochs: int,
                  min_update_clients: int,
                  min_fit_clients: int,
-                 convergent_value: int,
+                 convergent_value: float,
                  time_rational: float
                  ) -> None:
-        self.global_params_file: str = params_file
 
+        self.id = str(uuid.uuid4())
+        self.global_weight_file: str = "{}.weight".format(self.id)
+        self.global_bias_file: str = "{}.bias".format(self.id)
+
+        self.model = model
         # the minimum clients to start training process
         self.min_fit_clients = min_fit_clients
         self.min_update_clients = min_update_clients
@@ -46,8 +50,10 @@ class Strategy(ABC):
         self.latest_finished = ""
 
         # upload latest global model
-        upload_file_to_awss3(self.global_params_file)
-        return self.global_params_file
+        upload_file_to_awss3(self.global_weight_file)
+        upload_file_to_awss3(self.global_bias_file)
+
+        return self.global_weight_file, self.global_bias_file
 
     @abstractmethod
     def select_client(self, all_clients: Dict[str, Client]) -> List[str]:
@@ -55,13 +61,18 @@ class Strategy(ABC):
         """
 
     @abstractmethod
-    def aggregate(self, local_params: List[str], join_clients: List[Client]) -> None:
+    def aggregate(self, join_clients: Dict[str, Client]) -> None:
         """Aggregate algorithm.
         """
 
     @abstractmethod
     def evaluate(self):
         """Evaluate the current parameters
+        """
+
+    @abstractmethod
+    def save_weight_and_bias_to_file(self):
+        """
         """
 
     def check_update(self, total_finished: int):
@@ -93,3 +104,6 @@ class Strategy(ABC):
 
     def is_finish(self):
         return self.current_epoch == self.n_epochs
+
+
+

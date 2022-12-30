@@ -1,7 +1,7 @@
 from typing import Dict
 
-from commons.objects.messages_objects import UpdateMessage
-from commons.objects.client_object import Client
+from commons.objects.messages import UpdateMessage
+from commons.objects.client import Client
 
 
 class ClientManager:
@@ -102,7 +102,8 @@ class ClientManager:
         if client is not None:
             self.client_pools[client_id] = Client(client_id)
 
-        self.client_pools[client_id].params_link = msg_obj.param_link
+        self.client_pools[client_id].weight_file = msg_obj.weight_file
+        self.client_pools[client_id].bias_file = msg_obj.bias_file
         self.client_pools[client_id].current_epoch = msg_obj.epoch
         self.client_pools[client_id].acc = msg_obj.acc
         self.client_pools[client_id].loss = msg_obj.loss

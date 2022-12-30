@@ -6,18 +6,25 @@ from pika.spec import Basic, BasicProperties
 
 from commons.config import QueueConfig, RoutingRules
 from commons.utils.message_helper import *
+from commons.utils.weight_file_helpers import upload_file_to_awss3, save_nparray_to_file
+import uuid
 
 
 class ClientServer(ABC):
 
-    def __init__(self, model, queue_connection: BlockingConnection) -> None:
+    def __init__(self, queue_connection: BlockingConnection) -> None:
         self.connection: BlockingConnection = queue_connection
-        self.model = model
+
+        # never change
+        self.id: str = str(uuid.uuid4())
+        self.prefix = str(uuid.uuid4())
+
+        self.weight_file: str = "{}_{}.weight".format(self.prefix, self.id)
+        self.bias_file = "{}_{}.bias".format(self.prefix, self.id)
 
         self.client_epoch: int = 0
         self.channel: BlockingChannel = self.connection.channel()
-        self.id: str = ""
-        self.param_file: str = ""
+
         self.acc: float = 0.0
         self.loss: float = 0.0
         self.start: str = ""
@@ -26,20 +33,33 @@ class ClientServer(ABC):
     def start_listen(self) -> None:
         """Listen to training events
         """
+
+        # send register
+        self.send_to_server(RoutingRules.CLIENTS_REGISTER, self.id)
+
         while True:
             method_frame: Basic.GetOk
             header_frame: BasicProperties
             method_frame, header_frame, body = self.channel.basic_get(QueueConfig.CLIENT_QUEUE)
 
-            # close channel to avoid blocking
+            # close channel to avoid blocking then reconnect
             self.channel.close()
             self.channel = self.connection.channel()
 
             if method_frame:
-                global_training_info: GlobalMessage = decode_global_msg(body)
+
+                # decode
+                global_msg: GlobalMessage = decode_global_msg(body)
+
+                # if the all epochs complete => release and break
+                if global_msg.n_epochs - global_msg.current_epoch == 0:
+                    self.channel.close()
+                    self.connection.close()
+                    break
 
                 # if client epoch is smaller than global epoch => train
-                if self.client_epoch < global_training_info.epoch:
+                if self.client_epoch < global_msg.current_epoch:
+
                     # train
                     self.fit()
 
@@ -48,22 +68,33 @@ class ClientServer(ABC):
 
                     # Generate update msg
                     update_msg = UpdateMessage(
-                        self.id, self.client_epoch, self.param_file, self.acc
-                        , self.loss, self.start, self.end
+                        client_id=self.id, epoch=self.client_epoch,
+                        weight_file=self.weight_file, bias_file=self.bias_file,
+                        acc=self.acc, loss=self.loss, start=self.start, end=self.end
                     )
 
                     # Encode and send
                     encoded_update_msg = encode_update_msg(update_msg)
 
-                    self.send_update(RoutingRules.LOCAL_UPDATE, encoded_update_msg)
+                    # upload to aws s3 first.
+                    upload_file_to_awss3(self.weight_file)
+                    upload_file_to_awss3(self.bias_file)
 
-    def send_update(self, routing_key: str, body):
-        """Send the update for gradients
+                    self.send_to_server(RoutingRules.LOCAL_UPDATE, encoded_update_msg)
+
+    def send_to_server(self, routing_key: str, body):
+        """Send msg to server
         """
         self.channel.basic_publish(
             exchange=QueueConfig.EXCHANGE,
             routing_key=routing_key,
             body=body)
+
+    def save_weight_bias(self, weight, bias):
+        # save to file
+        save_nparray_to_file(weight, self.weight_file)
+        save_nparray_to_file(bias, self.bias_file)
+
 
     @abstractmethod
     def get_params(self):
