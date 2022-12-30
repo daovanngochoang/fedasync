@@ -1,7 +1,7 @@
 import pika
 from server.strategies.fedavg_tensorflow import FedAvgTensorflow
 from server.fedacync_server import Server
-from tensorflow.keras import layers, models
+from keras import layers, models
 
 # connect to queue
 rabbitmq_connection = pika.BlockingConnection(pika.URLParameters("amqp://guest:guest@localhost:5672/%2F"))

@@ -12,7 +12,7 @@ import uuid
 
 class ClientServer(ABC):
 
-    def __init__(self, queue_connection: BlockingConnection) -> None:
+    def __init__(self, n_epochs: int, queue_connection: BlockingConnection) -> None:
         self.connection: BlockingConnection = queue_connection
 
         # never change
@@ -24,7 +24,7 @@ class ClientServer(ABC):
 
         self.client_epoch: int = 0
         self.channel: BlockingChannel = self.connection.channel()
-
+        self.n_epochs: int = n_epochs
         self.acc: float = 0.0
         self.loss: float = 0.0
         self.start: str = ""
