@@ -45,7 +45,7 @@ class Server:
 
                         method_frame, header_frame, body = self.get_msg()
 
-                # get all available 
+                # get all available
                 n_available = self.client_manager.total()
 
                 # if enough clients => start training
