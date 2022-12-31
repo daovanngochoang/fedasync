@@ -2,10 +2,11 @@ from abc import ABC, abstractmethod
 from typing import Dict, List
 
 from commons.utils.weight_file_helpers import load_nparray_from_file, save_nparray_to_file
-from strategy import Strategy
+
 from commons.objects.client import Client
 from commons.config import ServerConfig
 import numpy as np
+from server.strategies.strategy import Strategy
 
 
 class FedAvg(Strategy, ABC):

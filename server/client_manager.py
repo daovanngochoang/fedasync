@@ -6,7 +6,6 @@ from commons.config import ServerConfig
 from commons.utils.time_helpers import time_now
 
 
-
 class ClientManager:
     def __init__(self) -> None:
         """Initialize a ClientManager object.

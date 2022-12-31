@@ -1,12 +1,13 @@
 from typing import Dict
 
+from keras_preprocessing.image import ImageDataGenerator
 from pika import BlockingConnection
 import tensorflow as tf
 from keras import layers, models, datasets
 import pika
 from client.client_server import ClientServer
 from commons.config import ServerConfig
-from commons.models.Lenet5 import Lenet5
+from commons.models.cifar10_classification_mode import model
 
 rabbitmq_connection = pika.BlockingConnection(pika.URLParameters("amqp://guest:guest@localhost:5672/%2F"))
 
@@ -15,6 +16,7 @@ ServerConfig.TMP_FOLDER = "./tmp/"
 ServerConfig.AWS_ACCESS_KEY_ID = "AKIARUCJKIXKV24ZV553"
 ServerConfig.AWS_SECRET_ACCESS_KEY = "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"
 ServerConfig.BUCKET_NAME = "fedasync"
+
 
 class ClientTensorflow(ClientServer):
 
@@ -38,7 +40,7 @@ class ClientTensorflow(ClientServer):
             )
 
     def create_model(self):
-        self.model = Lenet5
+        self.model = model
 
     def get_params(self) -> None:
         # get weight and bias of the model
@@ -47,11 +49,21 @@ class ClientTensorflow(ClientServer):
 
     def fit(self):
         data: Data = self.data[self.client_epoch]
-        self.model.fit(data.X_train, data.y_train, epochs=10)
+        # Image Data Generator , we are shifting image accross width and height
+        # also we are flipping the image horizantally.
+        datagen = ImageDataGenerator(width_shift_range=0.1, height_shift_range=0.1, horizontal_flip=True,
+                                     rotation_range=20)
+        it_train = datagen.flow(data.X_train, data.y_train)
+        self.model.fit(it_train, epochs=10)
 
     def evaluate(self):
         data: Data = self.data[self.client_epoch]
-        self.loss, self.acc = self.model.evaluate(data.X_test, data.y_test, epochs=10)
+        # Image Data Generator , we are shifting image accross width and height
+        # also we are flipping the image horizantally.
+        datagen = ImageDataGenerator(width_shift_range=0.1, height_shift_range=0.1, horizontal_flip=True,
+                                     rotation_range=20)
+        it_eval = datagen.flow(data.X_test, data.y_test)
+        self.loss, self.acc = self.model.evaluate(it_eval, epochs=10)
 
 
 class Data:

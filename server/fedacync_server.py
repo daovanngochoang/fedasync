@@ -1,13 +1,13 @@
 from commons.config import *
 from commons.objects.client import Client
 from commons.utils.time_helpers import time_now
-from strategies.strategy import Strategy
 from pika.adapters.blocking_connection import BlockingChannel, BlockingConnection
 from pika.spec import Basic, BasicProperties
-from client_manager import ClientManager
 import sys, os
 from commons.utils.message_helper import *
 from commons.utils.weight_file_helpers import *
+from server.client_manager import ClientManager
+from server.strategies.strategy import Strategy
 
 
 class Server:

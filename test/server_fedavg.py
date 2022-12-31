@@ -1,12 +1,12 @@
 import pika
 
 from commons.config import ServerConfig
-from commons.models.Lenet5 import Lenet5
+from commons.models.cifar10_classification_mode import model
 from server.strategies.fedavg_tensorflow import FedAvgTensorflow
 from server.fedacync_server import Server
 
 # connect to queue
-rabbitmq_connection = pika.BlockingConnection(pika.URLParameters("amqp://guest:guest@localhost:5672/%2F"))
+rabbitmq_connection = pika.BlockingConnection(pika.URLParameters("amqps://dmtiiogx:1Pf_J9q3HmJ0Fdo9oYu1H2Jbpk4YAKK4@armadillo.rmq.cloudamqp.com/dmtiiogx"))
 
 # Assign config for server.
 ServerConfig.TMP_FOLDER = "./tmp/"
@@ -15,7 +15,7 @@ ServerConfig.AWS_SECRET_ACCESS_KEY = "z0PQq5w9kWVpLwKu/9WT7MKZVVms0mUvZrnj0Dni"
 ServerConfig.BUCKET_NAME = "fedasync"
 
 # create tensor flow model
-model = Lenet5
+model = model
 
 # strategy
 fed_avg_tf: FedAvgTensorflow = FedAvgTensorflow(
