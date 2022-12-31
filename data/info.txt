@@ -1,0 +1,55 @@
+This folder contain 10 chunks of a dataset, which contains a total of 246999 1d images
+- The dimension of these image is (48 x 48)
+- These images are about 10 digits and 20 letters, which excludes i, j, o, q, r and w. 
+- This is because the dataset is designed to train for the task of recoginizing characters contains in Vietnamese motobike license plate
+- chunking this dataset is for the purpose of testing the performance of a distributed system
+
+
+- These imgages are saved in pickle file
+- The pickle file contain 2 type numpy arrays
+    - The first type is an array of images. whose dimension is (num_samples, 48, 48)
+    - The second type is the label, which values is within (0, 29). Its dimensions if (num_samples, )
+- There are 4 arrays in the file. Below is the order:
+    - the first array is X_train
+    - The second one is X_test
+    - The third one is Y_train
+    - The last one is Y_test
+
+- The testing set is about 10% to 15% of the whole dataset, varies from each chunk
+
+- The fraction of chunking process is presented as below:
+    [0.06, 0.07, 0.13, 0.15, 0.11, 0.18, 0.05, 0.1, 0.08, 0.07]
+
+- Detail information about the whole dataset. The total number of samples in each categories
+- The distribution of data in each chunk is the same as that of the whole dataset
+        [['0', '8100']
+        ['1' '8100']
+        ['2' '8100']
+        ['3' '8100']
+        ['4' '8101']
+        ['5' '8100']
+        ['6' '8100']
+        ['7' '8100']
+        ['8' '8100']
+        ['9' '8100']
+        ['a' '8300']
+        ['b' '8299']
+        ['c' '8299']
+        ['d' '8300']
+        ['e' '8300']
+        ['f' '8300']
+        ['g' '8300']
+        ['h' '8300']
+        ['k' '8300']
+        ['l' '8300']
+        ['m' '8300']
+        ['n' '8300']
+        ['p' '8300']
+        ['s' '8300']
+        ['t' '8300']
+        ['u' '8300']
+        ['v' '8300']
+        ['x' '8300']
+        ['y' '8300']
+        ['z' '8300']]
+
