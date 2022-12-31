@@ -9,7 +9,7 @@ class GlobalMessage:
 
 class UpdateMessage:
     def __init__(self, client_id: str, epoch: int, weight_file: str, bias_file: str
-                 , acc: float, loss: float, start: str, end: str):
+                 , acc: float, loss: float, start: str):
         self.client_id = client_id
         self.epoch = epoch
         self.weight_file = weight_file
@@ -17,6 +17,5 @@ class UpdateMessage:
         self.acc = acc
         self.loss = loss
         self.start = start
-        self.end = end
 
 

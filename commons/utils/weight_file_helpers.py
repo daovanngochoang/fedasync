@@ -1,24 +1,20 @@
 # Import the NumPy library as np
 import numpy as np
 import boto3
-from dotenv import dotenv_values
 from commons.config import ServerConfig
 
 # get tmp folder from config file
 tmp = ServerConfig.TMP_FOLDER
 
-# load env variables from .env file
-config = dotenv_values(".env")
-
 # get bucket name
-bucket_name = config["BUCKET_NAME"]
+bucket_name = ServerConfig.BUCKET_NAME
 
 # create s3 object with all necessary information
 s3 = boto3.resource(
     service_name="s3",
     region_name="ap-southeast-1",
-    aws_access_key_id=config["AWS_ACCESS_KEY_ID"],
-    aws_secret_access_key=config["AWS_SECRET_ACCESS_KEY"]
+    aws_access_key_id= ServerConfig.AWS_ACCESS_KEY_ID,
+    aws_secret_access_key=ServerConfig.AWS_SECRET_ACCESS_KEY
 )
 
 # get the target bucket

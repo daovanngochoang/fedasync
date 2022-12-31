@@ -2,6 +2,9 @@ from typing import Dict
 
 from commons.objects.messages import UpdateMessage
 from commons.objects.client import Client
+from commons.config import ServerConfig
+from commons.utils.time_helpers import time_now
+
 
 
 class ClientManager:
@@ -108,7 +111,7 @@ class ClientManager:
         self.client_pools[client_id].acc = msg_obj.acc
         self.client_pools[client_id].loss = msg_obj.loss
         self.client_pools[client_id].start_time = msg_obj.start
-        self.client_pools[client_id].finish_time = msg_obj.end
+        self.client_pools[client_id].finish_time = time_now()
         self.client_pools[client_id].is_finished = True
 
     def get_available(self):

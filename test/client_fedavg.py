@@ -5,10 +5,16 @@ import tensorflow as tf
 from keras import layers, models, datasets
 import pika
 from client.client_server import ClientServer
+from commons.config import ServerConfig
 from commons.models.Lenet5 import Lenet5
 
 rabbitmq_connection = pika.BlockingConnection(pika.URLParameters("amqp://guest:guest@localhost:5672/%2F"))
 
+# Assign config for server.
+ServerConfig.TMP_FOLDER = "./tmp/"
+ServerConfig.AWS_ACCESS_KEY_ID = "AKIARUCJKIXKV24ZV553"
+ServerConfig.AWS_SECRET_ACCESS_KEY = "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"
+ServerConfig.BUCKET_NAME = "fedasync"
 
 class ClientTensorflow(ClientServer):
 

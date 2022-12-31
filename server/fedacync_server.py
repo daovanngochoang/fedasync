@@ -89,10 +89,11 @@ class Server:
                     download_awss3_file(file_name=decoded_msg.weight_file)
                     download_awss3_file(file_name=decoded_msg.bias_file)
 
-                    if (self.strategy.first_finished and self.strategy.latest_finished) is None:
+                    # record the time
+                    if (self.strategy.first_finished and self.strategy.latest_finished) != "":
                         self.strategy.first_finished = self.strategy.latest_finished = time_now()
-                    elif self.strategy.first_finished is not None:
-                        self.
+                    elif self.strategy.first_finished != "":
+                        self.strategy.latest_finished = time_now()
 
                     # update client stage
                     self.client_manager.update_local_params(decoded_msg)

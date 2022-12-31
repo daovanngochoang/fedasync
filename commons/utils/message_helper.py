@@ -11,7 +11,6 @@ def encode_update_msg(update_message: UpdateMessage) -> str:
         'acc': update_message.acc,
         'loss': update_message.loss,
         'start': update_message.start,
-        'end': update_message.end
     }
 
     # convert to string
@@ -61,7 +60,7 @@ def decode_update_msg(message: bytes) -> UpdateMessage:
     decoded_update_msg = UpdateMessage(
         client_id=body['client_id'], epoch=body["epoch"],
         weight_file=body['weight_file'], bias_file=body['bias_file'],
-        acc=body['acc'], loss=body['loss'], start=body['start'], end=body['end']
+        acc=body['acc'], loss=body['loss'], start=body['start']
     )
 
     return decoded_update_msg
