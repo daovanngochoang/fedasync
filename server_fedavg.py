@@ -1,7 +1,7 @@
 import pika
 
 from fedasync_core.commons.config import Config
-from fedasync_core.commons.models.cifar10_classification_mode import cifar10_classification
+from fedasync_core.commons.models.lenet import LeNet
 from fedasync_core.server.strategies.fedavg_tensorflow import FedAvgTensorflow
 from fedasync_core.server.fedacync_server import Server
 
@@ -18,7 +18,7 @@ Config.BUCKET_NAME = "fedasync"
 
 
 # create tensor flow model
-model = cifar10_classification
+model = LeNet()
 
 # strategy
 fed_avg_tf: FedAvgTensorflow = FedAvgTensorflow(
