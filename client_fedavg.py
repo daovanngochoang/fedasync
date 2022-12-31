@@ -11,7 +11,9 @@ from fedasync.commons.config import ServerConfig
 from fedasync.commons.models.cifar10_classification_mode import cifar10_classification
 
 
-rabbitmq_connection = pika.BlockingConnection(pika.URLParameters("amqps://dmtiiogx:1Pf_J9q3HmJ0Fdo9oYu1H2Jbpk4YAKK4@armadillo.rmq.cloudamqp.com/dmtiiogx"))
+rabbitmq_connection = pika.BlockingConnection(pika.URLParameters(
+    "amqps://dmtiiogx:1Pf_J9q3HmJ0Fdo9oYu1H2Jbpk4YAKK4@armadillo.rmq.cloudamqp.com/dmtiiogx")
+)
 
 # Assign config for server.
 ServerConfig.TMP_FOLDER = "./tmp/"

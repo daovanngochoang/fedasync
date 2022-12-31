@@ -6,7 +6,9 @@ from fedasync.server.strategies.fedavg_tensorflow import FedAvgTensorflow
 from fedasync.server.fedacync_server import Server
 
 # connect to queue
-rabbitmq_connection = pika.BlockingConnection(pika.URLParameters("amqps://dmtiiogx:1Pf_J9q3HmJ0Fdo9oYu1H2Jbpk4YAKK4@armadillo.rmq.cloudamqp.com/dmtiiogx"))
+rabbitmq_connection = pika.BlockingConnection(pika.URLParameters(
+    "amqps://dmtiiogx:1Pf_J9q3HmJ0Fdo9oYu1H2Jbpk4YAKK4@armadillo.rmq.cloudamqp.com/dmtiiogx")
+)
 
 # Assign config for server.
 ServerConfig.TMP_FOLDER = "./tmp/"
