@@ -5,7 +5,7 @@ from pika.adapters.blocking_connection import BlockingChannel, BlockingConnectio
 from pika.spec import Basic, BasicProperties
 import sys, os
 from fedasync_core.commons.utils.message_helper import *
-from fedasync_core.commons.utils.weight_file_helpers import *
+from fedasync_core.commons.utils.awss3_file_manager import *
 from fedasync_core.server.client_manager import ClientManager
 from fedasync_core.server.strategies.strategy import Strategy
 
@@ -19,6 +19,7 @@ class Server:
 
         self.channel: BlockingChannel = self.connection.channel()
         self.client_manager: ClientManager = ClientManager()
+        self.awss3 = AwsS3()
 
     def get_msg(self):
         method_frame: Basic.GetOk
@@ -30,11 +31,11 @@ class Server:
 
     def start(self):
 
+        # connect to queue server and create queue
+        self.setup()
+
         try:
             while True:
-                # connect to queue server and create queue
-                self.setup()
-
                 method_frame: Basic.GetOk
                 header_frame: BasicProperties
                 method_frame, header_frame, body = self.get_msg()
@@ -43,9 +44,12 @@ class Server:
                 while method_frame:
                     routing_key = method_frame.routing_key
                     if routing_key == RoutingRules.CLIENTS_REGISTER:
-                        print(method_frame)
                         new_client = Client(id=body.decode())
                         self.client_manager.add_client(new_client)
+
+                        print(method_frame)
+                        print(self.client_manager.total())
+                        print(self.client_manager.get_all())
 
                         method_frame, header_frame, body = self.get_msg()
 
@@ -54,6 +58,7 @@ class Server:
 
                 # if enough clients => start training
                 if self.strategy.start_condition(n_available):
+                    print("Start training")
                     self.fit()
                     break
 
@@ -70,7 +75,7 @@ class Server:
         Start training distributed on multiple workers
         """
         # start new epoch
-        self.new_epoch([])
+        self.new_epoch()
 
         while True:
 
@@ -86,12 +91,13 @@ class Server:
 
                 # update prams routing key
                 if routing_key == RoutingRules.LOCAL_UPDATE:
+                    print("RECEIVE UPDATE")
                     # decode msg to rabbitmq msg
                     decoded_msg = decode_update_msg(body)
 
                     # get the weight and bias from s3
-                    download_awss3_file(file_name=decoded_msg.weight_file)
-                    download_awss3_file(file_name=decoded_msg.bias_file)
+                    self.awss3.download_awss3_file(file_name=decoded_msg.weight_file)
+                    self.awss3.download_awss3_file(file_name=decoded_msg.bias_file)
 
                     # record the time
                     if (self.strategy.first_finished and self.strategy.latest_finished) != "":
@@ -110,31 +116,38 @@ class Server:
             if self.strategy.check_update(len(finished_clients)):
 
                 # Update
+                print("Aggregate")
                 self.strategy.aggregate(finished_clients)
 
                 # Save value to history
                 self.client_manager.save_history(self.strategy.current_epoch)
 
-                # select clients
-                selected_clients = self.strategy.select_client(
-                    self.client_manager.client_pools
-                )
-
                 # if training process is not finished => new epoch
                 if not (self.strategy.is_finish()):
-                    self.new_epoch(selected_clients)
+                    print("NEW EPOCH")
+                    self.new_epoch()
 
                 # If training process is done => break
                 elif self.strategy.is_finish():
+                    print("STOP TRAINING")
                     self.stop()
                     break
 
-    def new_epoch(self, selected_clients):
+    def new_epoch(self):
         # Generate new params
         global_weight_file, global_bias_file = self.strategy.initialize_parameters()
 
+        # upload latest global model
+        self.awss3.upload_file_to_awss3(global_weight_file)
+        self.awss3.upload_file_to_awss3(global_bias_file)
+
         # select clients
-        chosen_id = self.strategy.select_client(selected_clients)
+        chosen_id = self.strategy.select_client(self.client_manager.get_all())
+
+        self.client_manager.make_available(chosen_id)
+
+        # update min update.
+        self.strategy.min_update_clients = int(len(chosen_id) / 2)
 
         # create msg object
         msg = GlobalMessage(chosen_id=chosen_id, current_epoch=self.strategy.current_epoch,
@@ -182,6 +195,11 @@ class Server:
             queue=QueueConfig.CLIENT_QUEUE,
             exchange=QueueConfig.EXCHANGE,
             routing_key=RoutingRules.NEW_EPOCH)
+
+        # Delete old msg in the queue
+        self.channel.queue_purge(QueueConfig.CLIENT_QUEUE)
+        # Delete old msg in the queue
+        self.channel.queue_purge(QueueConfig.SERVER_QUEUE)
 
     def send_to_clients(self, routing_key: str, body) -> None:
         """Send message with routing key

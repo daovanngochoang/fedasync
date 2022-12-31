@@ -1,8 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import Dict, List
 
-from fedasync_core.commons.utils.weight_file_helpers import load_nparray_from_file, save_nparray_to_file
-
 from fedasync_core.commons.objects.client import Client
 from fedasync_core.commons.config import ServerConfig
 import numpy as np
@@ -26,11 +24,14 @@ class FedAvg(Strategy, ABC):
         """
         total_weight: np.ndarray = np.array([])
         total_bias: np.ndarray = np.array([])
+
         for cli in join_clients:
-            weight_file = ServerConfig.TMP_FOLDER + cli.weight_file
-            bias_file = ServerConfig.TMP_FOLDER + cli.bias_file
-            weight = load_nparray_from_file(weight_file)
-            bias = load_nparray_from_file(bias_file)
+            weight_file = self.tmp + cli.weight_file
+            bias_file = self.tmp + cli.bias_file
+
+            # Load the array from the specified file using the numpy.load function
+            weight = np.load(self.tmp + weight_file)
+            bias = np.load(self.tmp + bias_file)
 
             if len(total_weight) == 0:
                 total_weight = weight
@@ -42,13 +43,10 @@ class FedAvg(Strategy, ABC):
         total_clients = len(join_clients)
         avg_weight = total_weight / total_clients
         avg_bias = total_bias / total_clients
-        save_nparray_to_file(avg_weight, self.global_weight_file)
-        save_nparray_to_file(avg_bias, self.global_bias_file)
+        self.save_weight_and_bias_to_file(avg_weight, avg_bias)
 
     @abstractmethod
     def evaluate(self):
         pass
 
-    @abstractmethod
-    def save_weight_and_bias_to_file(self):
-        pass
+

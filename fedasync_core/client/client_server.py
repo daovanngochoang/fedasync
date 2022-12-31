@@ -1,13 +1,15 @@
 from abc import ABC, abstractmethod
 
+import numpy as np
 from pika import BlockingConnection
 from pika.adapters.blocking_connection import BlockingChannel
 from pika.spec import Basic, BasicProperties
 from fedasync_core.commons.utils.time_helpers import time_now
-from fedasync_core.commons.config import QueueConfig, RoutingRules
+from fedasync_core.commons.config import QueueConfig, RoutingRules, ServerConfig
 from fedasync_core.commons.utils.message_helper import *
-from fedasync_core.commons.utils.weight_file_helpers import upload_file_to_awss3, save_nparray_to_file
+from fedasync_core.commons.utils.awss3_file_manager import AwsS3
 import uuid
+from fedasync_core.commons.utils.numpy_file_helpers import *
 
 
 class ClientServer(ABC):
@@ -22,6 +24,8 @@ class ClientServer(ABC):
         self.weight_file: str = "{}_{}.weight".format(self.prefix, self.id)
         self.bias_file = "{}_{}.bias".format(self.prefix, self.id)
 
+        self.model = None
+
         self.client_epoch: int = 0
         self.channel: BlockingChannel = self.connection.channel()
         self.n_epochs: int = n_epochs
@@ -29,6 +33,7 @@ class ClientServer(ABC):
         self.loss: float = 0.0
         self.start: str = ""
         self.end: str = ""
+        self.awss3 = AwsS3()
 
     def start_listen(self) -> None:
         """Listen to training events
@@ -51,6 +56,10 @@ class ClientServer(ABC):
                 # decode
                 global_msg: GlobalMessage = decode_global_msg(body)
 
+                print(global_msg.current_epoch)
+                print(global_msg.chosen_id)
+                print(global_msg.chosen_id)
+
                 # if the all epochs complete => release and break
                 if global_msg.n_epochs - global_msg.current_epoch == 0:
                     self.channel.close()
@@ -58,18 +67,34 @@ class ClientServer(ABC):
                     break
 
                 # if client epoch is smaller than global epoch => train
-                if self.client_epoch < global_msg.current_epoch:
+                if self.client_epoch < global_msg.current_epoch and self.id in global_msg.chosen_id:
+                    print("start local training")
                     self.start = time_now()
 
+                    self.create_model()
+
+                    self.awss3.download_awss3_file(global_msg.weight_file)
+                    self.awss3.download_awss3_file(global_msg.bias_file)
+
+                    weight = load_array(self.awss3.tmp + global_msg.weight_file)
+                    bias = load_array(self.awss3.tmp + global_msg.weight_file)
+
+                    model_weights = [weight, bias]
+                    self.model.set_weights(model_weights)
+
+                    self.data_preprocessing()
+
+                    print("Fit")
                     # train
                     self.fit()
 
                     # eval
+                    print("Evaluate")
                     self.evaluate()
 
                     # upload to aws s3 first.
-                    upload_file_to_awss3(self.weight_file)
-                    upload_file_to_awss3(self.bias_file)
+                    self.awss3.upload_file_to_awss3(self.weight_file)
+                    self.awss3.upload_file_to_awss3(self.bias_file)
 
                     # get the end time
                     self.end = time_now()
@@ -78,7 +103,7 @@ class ClientServer(ABC):
                     update_msg = UpdateMessage(
                         client_id=self.id, epoch=self.client_epoch,
                         weight_file=self.weight_file, bias_file=self.bias_file,
-                        acc=self.acc, loss=self.loss, start=self.start, end=self.end
+                        acc=self.acc, loss=self.loss, start=self.start
                     )
 
                     # Encode and send
@@ -101,8 +126,8 @@ class ClientServer(ABC):
 
     def save_weight_bias(self, weight, bias):
         # save to file
-        save_nparray_to_file(weight, self.weight_file)
-        save_nparray_to_file(bias, self.bias_file)
+        np.save(weight, self.awss3.tmp + self.weight_file)
+        np.save(bias, self.awss3.tmp + self.bias_file)
 
     @abstractmethod
     def get_params(self):
@@ -115,3 +140,17 @@ class ClientServer(ABC):
     @abstractmethod
     def evaluate(self):
         pass
+
+    @abstractmethod
+    def data_preprocessing(self):
+        """
+
+        Returns
+        -------
+
+        """
+
+    @abstractmethod
+    def create_model(self):
+        """
+        """

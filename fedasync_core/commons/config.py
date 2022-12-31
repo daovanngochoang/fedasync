@@ -14,7 +14,7 @@ class QueueConfig:
 
 
 class ServerConfig:
-    TMP_FOLDER = "./tmp/"
+    TMP_FOLDER = "./server_tmp/"
     AWS_ACCESS_KEY_ID = ""
     AWS_SECRET_ACCESS_KEY = ""
     BUCKET_NAME = ""

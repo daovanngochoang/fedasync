@@ -11,10 +11,11 @@ rabbitmq_connection = pika.BlockingConnection(pika.URLParameters(
 )
 
 # Assign config for server.
-ServerConfig.TMP_FOLDER = "./tmp/"
+ServerConfig.TMP_FOLDER = "./tmp/server_tmp/"
 ServerConfig.AWS_ACCESS_KEY_ID = "AKIARUCJKIXKV24ZV553"
 ServerConfig.AWS_SECRET_ACCESS_KEY = "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"
-ServerConfig.BUCKET_NAME = "fedasync_core"
+ServerConfig.BUCKET_NAME = "fedasync"
+
 
 # create tensor flow model
 model = cifar10_classification
@@ -23,8 +24,8 @@ model = cifar10_classification
 fed_avg_tf: FedAvgTensorflow = FedAvgTensorflow(
     model,
     n_epochs=10,
-    min_fit_clients=10,
-    min_update_clients=5,
+    min_fit_clients=3,
+    min_update_clients=2,
     convergent_value=0.1
 )
 

@@ -79,11 +79,11 @@ class ClientManager:
         client: Client
 
         # Iterate over the clients in the client_pools attribute
-        for client in self.client_pools:
+        for id in self.client_pools:
             # If the client's epoch number matches the specified epoch
             # and the client is finished, add it to the result dictionary
-            if client.id == epoch and client.is_finished:
-                result[client.id] = client
+            if self.client_pools[id].current_epoch == epoch and self.client_pools[id].is_finished:
+                result[id] = self.client_pools[id]
 
         return result
 
@@ -98,6 +98,7 @@ class ClientManager:
         # Get the client object from the client_pools attribute
         client_id = msg_obj.client_id
         client: Client = self.client_pools[client_id]
+
         # If the client object exists, update its attributes else
         if client is not None:
             self.client_pools[client_id] = Client(client_id)
@@ -148,3 +149,14 @@ class ClientManager:
         for client in self.client_pools:
             # reset all attribute
             client.reset()
+
+    def make_available(self, client_id):
+        for id in client_id:
+            self.client_pools[id].is_finished = False
+            # print(self.client_pools[id].id)
+            # print(self.client_pools[id].current_epoch)
+            # print(self.client_pools[id].weight_file)
+            # print(self.client_pools[id].bias_file)
+            # print(self.client_pools[id].start_time)
+            # print(self.client_pools[id].finish_time)
+            # print(self.client_pools[id].is_finished)

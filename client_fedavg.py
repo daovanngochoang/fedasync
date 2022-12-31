@@ -2,8 +2,7 @@ from typing import Dict
 
 from keras_preprocessing.image import ImageDataGenerator
 from pika import BlockingConnection
-import tensorflow as tf
-from keras import layers, models, datasets
+from keras import datasets
 import pika
 
 from fedasync_core.client.client_server import ClientServer
@@ -16,10 +15,10 @@ rabbitmq_connection = pika.BlockingConnection(pika.URLParameters(
 )
 
 # Assign config for server.
-ServerConfig.TMP_FOLDER = "./tmp/"
+ServerConfig.TMP_FOLDER = "./tmp/client_tmp/"
 ServerConfig.AWS_ACCESS_KEY_ID = "AKIARUCJKIXKV24ZV553"
 ServerConfig.AWS_SECRET_ACCESS_KEY = "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"
-ServerConfig.BUCKET_NAME = "fedasync_core"
+ServerConfig.BUCKET_NAME = "fedasync"
 
 
 class ClientTensorflow(ClientServer):
@@ -27,7 +26,6 @@ class ClientTensorflow(ClientServer):
     def __init__(self, n_epochs, queue_connection: BlockingConnection):
         super().__init__(n_epochs, queue_connection)
 
-        self.model = None
         self.data: Dict[int, Data] = {}
 
     def data_preprocessing(self):
