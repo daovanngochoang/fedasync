@@ -1,12 +1,12 @@
 from abc import ABC, abstractmethod
 from typing import Dict, List
 
-from fedasync.commons.utils.weight_file_helpers import load_nparray_from_file, save_nparray_to_file
+from fedasync_core.commons.utils.weight_file_helpers import load_nparray_from_file, save_nparray_to_file
 
-from fedasync.commons.objects.client import Client
-from fedasync.commons.config import ServerConfig
+from fedasync_core.commons.objects.client import Client
+from fedasync_core.commons.config import ServerConfig
 import numpy as np
-from fedasync.server.strategies.strategy import Strategy
+from fedasync_core.server.strategies.strategy import Strategy
 
 
 class FedAvg(Strategy, ABC):

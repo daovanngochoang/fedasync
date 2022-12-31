@@ -1,13 +1,13 @@
-from fedasync.commons.config import *
-from fedasync.commons.objects.client import Client
-from fedasync.commons.utils.time_helpers import time_now
+from fedasync_core.commons.config import *
+from fedasync_core.commons.objects.client import Client
+from fedasync_core.commons.utils.time_helpers import time_now
 from pika.adapters.blocking_connection import BlockingChannel, BlockingConnection
 from pika.spec import Basic, BasicProperties
 import sys, os
-from fedasync.commons.utils.message_helper import *
-from fedasync.commons.utils.weight_file_helpers import *
-from fedasync.server.client_manager import ClientManager
-from fedasync.server.strategies.strategy import Strategy
+from fedasync_core.commons.utils.message_helper import *
+from fedasync_core.commons.utils.weight_file_helpers import *
+from fedasync_core.server.client_manager import ClientManager
+from fedasync_core.server.strategies.strategy import Strategy
 
 
 class Server:

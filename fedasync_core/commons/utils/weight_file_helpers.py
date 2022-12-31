@@ -2,7 +2,7 @@
 import numpy as np
 import boto3
 
-from fedasync.commons.config import ServerConfig
+from fedasync_core.commons.config import ServerConfig
 
 # get tmp folder from config file
 tmp = ServerConfig.TMP_FOLDER

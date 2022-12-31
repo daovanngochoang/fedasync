@@ -6,9 +6,9 @@ import tensorflow as tf
 from keras import layers, models, datasets
 import pika
 
-from fedasync.client.client_server import ClientServer
-from fedasync.commons.config import ServerConfig
-from fedasync.commons.models.cifar10_classification_mode import cifar10_classification
+from fedasync_core.client.client_server import ClientServer
+from fedasync_core.commons.config import ServerConfig
+from fedasync_core.commons.models.cifar10_classification_mode import cifar10_classification
 
 
 rabbitmq_connection = pika.BlockingConnection(pika.URLParameters(
@@ -19,7 +19,7 @@ rabbitmq_connection = pika.BlockingConnection(pika.URLParameters(
 ServerConfig.TMP_FOLDER = "./tmp/"
 ServerConfig.AWS_ACCESS_KEY_ID = "AKIARUCJKIXKV24ZV553"
 ServerConfig.AWS_SECRET_ACCESS_KEY = "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"
-ServerConfig.BUCKET_NAME = "fedasync"
+ServerConfig.BUCKET_NAME = "fedasync_core"
 
 
 class ClientTensorflow(ClientServer):

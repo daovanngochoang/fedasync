@@ -1,7 +1,7 @@
 from typing import Dict
-from fedasync.commons.objects.messages import UpdateMessage
-from fedasync.commons.objects.client import Client
-from fedasync.commons.utils.time_helpers import time_now
+from fedasync_core.commons.objects.messages import UpdateMessage
+from fedasync_core.commons.objects.client import Client
+from fedasync_core.commons.utils.time_helpers import time_now
 
 
 class ClientManager:

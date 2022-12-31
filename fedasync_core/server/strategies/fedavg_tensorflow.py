@@ -1,5 +1,5 @@
-from fedasync.commons.utils.weight_file_helpers import save_nparray_to_file
-from fedasync.server.strategies.fedavg import FedAvg
+from fedasync_core.commons.utils.weight_file_helpers import save_nparray_to_file
+from fedasync_core.server.strategies.fedavg import FedAvg
 
 
 class FedAvgTensorflow(FedAvg):
