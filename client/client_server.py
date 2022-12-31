@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 from pika import BlockingConnection
 from pika.adapters.blocking_connection import BlockingChannel
 from pika.spec import Basic, BasicProperties
-
+from commons.utils.time_helpers import time_now
 from commons.config import QueueConfig, RoutingRules
 from commons.utils.message_helper import *
 from commons.utils.weight_file_helpers import upload_file_to_awss3, save_nparray_to_file
@@ -59,12 +59,20 @@ class ClientServer(ABC):
 
                 # if client epoch is smaller than global epoch => train
                 if self.client_epoch < global_msg.current_epoch:
+                    self.start = time_now()
 
                     # train
                     self.fit()
 
                     # eval
                     self.evaluate()
+
+                    # upload to aws s3 first.
+                    upload_file_to_awss3(self.weight_file)
+                    upload_file_to_awss3(self.bias_file)
+
+                    # get the end time
+                    self.end = time_now()
 
                     # Generate update msg
                     update_msg = UpdateMessage(
@@ -76,11 +84,12 @@ class ClientServer(ABC):
                     # Encode and send
                     encoded_update_msg = encode_update_msg(update_msg)
 
-                    # upload to aws s3 first.
-                    upload_file_to_awss3(self.weight_file)
-                    upload_file_to_awss3(self.bias_file)
-
                     self.send_to_server(RoutingRules.LOCAL_UPDATE, encoded_update_msg)
+
+                    # reset data
+                    self.client_epoch += 1
+                    self.start = ""
+                    self.end = ""
 
     def send_to_server(self, routing_key: str, body):
         """Send msg to server
@@ -94,7 +103,6 @@ class ClientServer(ABC):
         # save to file
         save_nparray_to_file(weight, self.weight_file)
         save_nparray_to_file(bias, self.bias_file)
-
 
     @abstractmethod
     def get_params(self):

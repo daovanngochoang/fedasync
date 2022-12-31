@@ -1,5 +1,6 @@
 from commons.config import *
 from commons.objects.client import Client
+from commons.utils.time_helpers import time_now
 from strategies.strategy import Strategy
 from pika.adapters.blocking_connection import BlockingChannel, BlockingConnection
 from pika.spec import Basic, BasicProperties
@@ -87,6 +88,11 @@ class Server:
                     # get the weight and bias from s3
                     download_awss3_file(file_name=decoded_msg.weight_file)
                     download_awss3_file(file_name=decoded_msg.bias_file)
+
+                    if (self.strategy.first_finished and self.strategy.latest_finished) is None:
+                        self.strategy.first_finished = self.strategy.latest_finished = time_now()
+                    elif self.strategy.first_finished is not None:
+                        self.
 
                     # update client stage
                     self.client_manager.update_local_params(decoded_msg)
