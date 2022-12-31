@@ -1,7 +1,9 @@
 # Federated Learning Project
 
 ## Setup Development Environment
+
 ### Install docker on linux
+
 1. Install docker For Debian/Ubuntu or Debian-based
 
 ```bash
@@ -23,25 +25,31 @@ echo \
   "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
   $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 
-# Install docker 
+# Install docker
 sudo apt-get install docker-ce docker-ce-cli containerd.io docker-compose-plugin
-``` 
+```
 
-2. Enable using docker without sudo 
+2. Enable using docker without sudo
 
 ```bash
 sudo groupadd docker
 sudo usermod -aG docker $USER
 newgrp docker
 ```
+
 now you can use docker without sudo right
+
 ### Install RabbitMQ in docker.
 
-simply run: 
+simply run:
 
 ```bash
-docker run --rm -it --name rabbitmq -p 15672:15672 -p 5672:5672 rabbitmq:3-management 
+docker run --rm -it --name rabbitmq -p 15672:15672 -p 5672:5672 rabbitmq:3-management
 ```
 
+## Install Dependencies
 
+```bash
+pip install requirement.txt
 
+```
