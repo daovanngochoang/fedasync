@@ -1,5 +1,4 @@
-# Importing the necessary libraries, which we may or may not use. Its always good idea to import them befor (if you
-# remember) else we can do it at any point of time no problem.
+
 from keras.models import Sequential
 from keras.layers import MaxPool2D, Dense, Flatten, Dropout, Conv2D, BatchNormalization
 

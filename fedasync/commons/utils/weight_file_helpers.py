@@ -1,7 +1,8 @@
 # Import the NumPy library as np
 import numpy as np
 import boto3
-from commons.config import ServerConfig
+
+from fedasync.commons.config import ServerConfig
 
 # get tmp folder from config file
 tmp = ServerConfig.TMP_FOLDER

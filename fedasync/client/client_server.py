@@ -3,10 +3,10 @@ from abc import ABC, abstractmethod
 from pika import BlockingConnection
 from pika.adapters.blocking_connection import BlockingChannel
 from pika.spec import Basic, BasicProperties
-from commons.utils.time_helpers import time_now
-from commons.config import QueueConfig, RoutingRules
-from commons.utils.message_helper import *
-from commons.utils.weight_file_helpers import upload_file_to_awss3, save_nparray_to_file
+from fedasync.commons.utils.time_helpers import time_now
+from fedasync.commons.config import QueueConfig, RoutingRules
+from fedasync.commons.utils.message_helper import *
+from fedasync.commons.utils.weight_file_helpers import upload_file_to_awss3, save_nparray_to_file
 import uuid
 
 

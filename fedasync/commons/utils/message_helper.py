@@ -1,5 +1,5 @@
 import json
-from commons.objects.messages import *
+from fedasync.commons.objects.messages import UpdateMessage, GlobalMessage
 
 
 def encode_update_msg(update_message: UpdateMessage) -> str:
