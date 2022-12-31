@@ -1,7 +1,7 @@
 import pika
 
 from commons.config import ServerConfig
-from commons.models.cifar10_classification_mode import model
+from commons.models.cifar10_classification_mode import cifar10_classification
 from server.strategies.fedavg_tensorflow import FedAvgTensorflow
 from server.fedacync_server import Server
 
@@ -15,7 +15,7 @@ ServerConfig.AWS_SECRET_ACCESS_KEY = "z0PQq5w9kWVpLwKu/9WT7MKZVVms0mUvZrnj0Dni"
 ServerConfig.BUCKET_NAME = "fedasync"
 
 # create tensor flow model
-model = model
+model = cifar10_classification
 
 # strategy
 fed_avg_tf: FedAvgTensorflow = FedAvgTensorflow(

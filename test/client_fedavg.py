@@ -5,11 +5,12 @@ from pika import BlockingConnection
 import tensorflow as tf
 from keras import layers, models, datasets
 import pika
+
 from client.client_server import ClientServer
 from commons.config import ServerConfig
-from commons.models.cifar10_classification_mode import model
+from commons.models.cifar10_classification_mode import cifar10_classification
 
-rabbitmq_connection = pika.BlockingConnection(pika.URLParameters("amqp://guest:guest@localhost:5672/%2F"))
+rabbitmq_connection = pika.BlockingConnection(pika.URLParameters("amqps://dmtiiogx:1Pf_J9q3HmJ0Fdo9oYu1H2Jbpk4YAKK4@armadillo.rmq.cloudamqp.com/dmtiiogx"))
 
 # Assign config for server.
 ServerConfig.TMP_FOLDER = "./tmp/"
@@ -40,7 +41,7 @@ class ClientTensorflow(ClientServer):
             )
 
     def create_model(self):
-        self.model = model
+        self.model = cifar10_classification
 
     def get_params(self) -> None:
         # get weight and bias of the model
@@ -72,3 +73,8 @@ class Data:
         self.y_train = y_train
         self.X_test = X_test
         self.y_test = y_test
+
+
+client = ClientTensorflow(10, rabbitmq_connection)
+
+client.start_listen()
