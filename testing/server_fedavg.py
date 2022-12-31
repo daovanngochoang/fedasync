@@ -1,9 +1,9 @@
 import pika
 
-from commons.config import ServerConfig
-from commons.models.cifar10_classification_mode import cifar10_classification
-from server.strategies.fedavg_tensorflow import FedAvgTensorflow
-from server.fedacync_server import Server
+from fedasync.commons.config import ServerConfig
+from fedasync.commons.models.cifar10_classification_mode import cifar10_classification
+from fedasync.server.strategies.fedavg_tensorflow import FedAvgTensorflow
+from fedasync.server.fedacync_server import Server
 
 # connect to queue
 rabbitmq_connection = pika.BlockingConnection(pika.URLParameters("amqps://dmtiiogx:1Pf_J9q3HmJ0Fdo9oYu1H2Jbpk4YAKK4@armadillo.rmq.cloudamqp.com/dmtiiogx"))
