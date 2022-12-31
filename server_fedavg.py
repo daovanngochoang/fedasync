@@ -1,20 +1,20 @@
 import pika
 
-from fedasync_core.commons.config import ServerConfig
+from fedasync_core.commons.config import Config
 from fedasync_core.commons.models.cifar10_classification_mode import cifar10_classification
 from fedasync_core.server.strategies.fedavg_tensorflow import FedAvgTensorflow
 from fedasync_core.server.fedacync_server import Server
 
 # connect to queue
 rabbitmq_connection = pika.BlockingConnection(pika.URLParameters(
-    "amqps://dmtiiogx:1Pf_J9q3HmJ0Fdo9oYu1H2Jbpk4YAKK4@armadillo.rmq.cloudamqp.com/dmtiiogx")
+    "amqp://guest:guest@localhost:5672/%2F")
 )
 
 # Assign config for server.
-ServerConfig.TMP_FOLDER = "./tmp/server_tmp/"
-ServerConfig.AWS_ACCESS_KEY_ID = "AKIARUCJKIXKV24ZV553"
-ServerConfig.AWS_SECRET_ACCESS_KEY = "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"
-ServerConfig.BUCKET_NAME = "fedasync"
+Config.TMP_FOLDER = "./tmp/server_tmp/"
+Config.AWS_ACCESS_KEY_ID = "AKIARUCJKIXKV24ZV553"
+Config.AWS_SECRET_ACCESS_KEY = "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"
+Config.BUCKET_NAME = "fedasync"
 
 
 # create tensor flow model
@@ -23,7 +23,7 @@ model = cifar10_classification
 # strategy
 fed_avg_tf: FedAvgTensorflow = FedAvgTensorflow(
     model,
-    n_epochs=10,
+    n_epochs=5,
     min_fit_clients=3,
     min_update_clients=2,
     convergent_value=0.1

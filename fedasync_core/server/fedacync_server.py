@@ -75,6 +75,7 @@ class Server:
         Start training distributed on multiple workers
         """
         # start new epoch
+        self.strategy.get_model_weights()
         self.new_epoch()
 
         while True:
@@ -97,10 +98,9 @@ class Server:
 
                     # get the weight and bias from s3
                     self.awss3.download_awss3_file(file_name=decoded_msg.weight_file)
-                    self.awss3.download_awss3_file(file_name=decoded_msg.bias_file)
 
                     # record the time
-                    if (self.strategy.first_finished and self.strategy.latest_finished) != "":
+                    if (self.strategy.first_finished != "" and self.strategy.latest_finished) != "":
                         self.strategy.first_finished = self.strategy.latest_finished = time_now()
                     elif self.strategy.first_finished != "":
                         self.strategy.latest_finished = time_now()
@@ -108,9 +108,17 @@ class Server:
                     # update client stage
                     self.client_manager.update_local_params(decoded_msg)
 
+                    print("start_time: ", self.strategy.start_time)
+                    print("first_finished: ", self.strategy.first_finished)
+                    print("latest_finished: ", self.strategy.latest_finished)
+                    print("\n\n")
+
             """------------------------Checking for update-------------------------------"""
             # Check the update condition asynchronously
+            print("current epoch: ", self.strategy.current_epoch)
             finished_clients = self.client_manager.filter_finished_clients_by_epoch(self.strategy.current_epoch)
+
+            print(self.strategy.check_update(len(finished_clients)))
 
             # if the update condition is true
             if self.strategy.check_update(len(finished_clients)):
@@ -135,11 +143,10 @@ class Server:
 
     def new_epoch(self):
         # Generate new params
-        global_weight_file, global_bias_file = self.strategy.initialize_parameters()
+        global_weight_file = self.strategy.initialize_parameters()
 
         # upload latest global model
         self.awss3.upload_file_to_awss3(global_weight_file)
-        self.awss3.upload_file_to_awss3(global_bias_file)
 
         # select clients
         chosen_id = self.strategy.select_client(self.client_manager.get_all())
@@ -147,12 +154,13 @@ class Server:
         self.client_manager.make_available(chosen_id)
 
         # update min update.
-        self.strategy.min_update_clients = int(len(chosen_id) / 2)
+        if self.strategy.current_epoch > 1:
+            self.strategy.min_update_clients = int(len(chosen_id) / 2)
 
         # create msg object
         msg = GlobalMessage(chosen_id=chosen_id, current_epoch=self.strategy.current_epoch,
                             n_epochs=self.strategy.n_epochs,
-                            weight_file=global_weight_file, bias_file=global_bias_file)
+                            weight_file=global_weight_file)
 
         # encode
         str_msg = encode_global_msg(msg)
@@ -179,7 +187,7 @@ class Server:
         # create exchange
         self.channel.exchange_declare(QueueConfig.EXCHANGE, exchange_type="direct")
 
-        # binding server queue to the related reouting key in queue config.
+        # binding server queue to the related routing key in queue config.
         self.channel.queue_bind(
             queue=QueueConfig.SERVER_QUEUE,
             exchange=QueueConfig.EXCHANGE,

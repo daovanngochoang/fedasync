@@ -1,24 +1,25 @@
 from typing import Dict
 
+import numpy as np
 from keras_preprocessing.image import ImageDataGenerator
 from pika import BlockingConnection
 from keras import datasets
 import pika
 
 from fedasync_core.client.client_server import ClientServer
-from fedasync_core.commons.config import ServerConfig
+from fedasync_core.commons.config import Config
 from fedasync_core.commons.models.cifar10_classification_mode import cifar10_classification
-
+from fedasync_core.commons.utils.numpy_file_helpers import save_array
 
 rabbitmq_connection = pika.BlockingConnection(pika.URLParameters(
-    "amqps://dmtiiogx:1Pf_J9q3HmJ0Fdo9oYu1H2Jbpk4YAKK4@armadillo.rmq.cloudamqp.com/dmtiiogx")
+    "amqp://guest:guest@localhost:5672/%2F")
 )
 
 # Assign config for server.
-ServerConfig.TMP_FOLDER = "./tmp/client_tmp/"
-ServerConfig.AWS_ACCESS_KEY_ID = "AKIARUCJKIXKV24ZV553"
-ServerConfig.AWS_SECRET_ACCESS_KEY = "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"
-ServerConfig.BUCKET_NAME = "fedasync"
+Config.TMP_FOLDER = "./tmp/client_tmp/"
+Config.AWS_ACCESS_KEY_ID = "AKIARUCJKIXKV24ZV553"
+Config.AWS_SECRET_ACCESS_KEY = "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"
+Config.BUCKET_NAME = "fedasync"
 
 
 class ClientTensorflow(ClientServer):
@@ -44,15 +45,18 @@ class ClientTensorflow(ClientServer):
     def create_model(self):
         self.model = cifar10_classification
 
-    def get_params(self) -> None:
+    def get_weights(self) -> None:
         # get weight and bias of the model
-        weight, bias = self.model.get_weights()
-        self.save_weight_bias(weight, bias)
+        weights = self.model.get_weights()
+        save_array(np.array(weights, dtype=object), self.path_to_weights)
+
+    def set_weights(self, weights):
+        self.model.set_weights(weights)
 
     def fit(self):
         data: Data = self.data[self.client_epoch]
-        # Image Data Generator , we are shifting image accross width and height
-        # also we are flipping the image horizantally.
+        # Image Data Generator , we are shifting image across width and height
+        # also we are flipping the image horizontally.
         datagen = ImageDataGenerator(width_shift_range=0.1, height_shift_range=0.1, horizontal_flip=True,
                                      rotation_range=20)
         it_train = datagen.flow(data.X_train, data.y_train)

@@ -1,24 +1,24 @@
 # Import the NumPy library as np
 import numpy as np
 import boto3
-from fedasync_core.commons.config import ServerConfig
+from fedasync_core.commons.config import Config
 
 
 class AwsS3:
 
     def __init__(self):
         # get server_tmp folder from config file
-        self.tmp = ServerConfig.TMP_FOLDER
+        self.tmp = Config.TMP_FOLDER
 
         # get bucket name
-        self.bucket_name = ServerConfig.BUCKET_NAME
+        self.bucket_name = Config.BUCKET_NAME
 
         # create s3 object with all necessary information
         self.s3 = boto3.resource(
             service_name="s3",
             region_name="ap-southeast-1",
-            aws_access_key_id=ServerConfig.AWS_ACCESS_KEY_ID,
-            aws_secret_access_key=ServerConfig.AWS_SECRET_ACCESS_KEY
+            aws_access_key_id=Config.AWS_ACCESS_KEY_ID,
+            aws_secret_access_key=Config.AWS_SECRET_ACCESS_KEY
         )
 
         # get the target bucket

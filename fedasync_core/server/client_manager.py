@@ -104,7 +104,6 @@ class ClientManager:
             self.client_pools[client_id] = Client(client_id)
 
         self.client_pools[client_id].weight_file = msg_obj.weight_file
-        self.client_pools[client_id].bias_file = msg_obj.bias_file
         self.client_pools[client_id].current_epoch = msg_obj.epoch
         self.client_pools[client_id].acc = msg_obj.acc
         self.client_pools[client_id].loss = msg_obj.loss
@@ -153,10 +152,10 @@ class ClientManager:
     def make_available(self, client_id):
         for id in client_id:
             self.client_pools[id].is_finished = False
-            # print(self.client_pools[id].id)
-            # print(self.client_pools[id].current_epoch)
-            # print(self.client_pools[id].weight_file)
-            # print(self.client_pools[id].bias_file)
-            # print(self.client_pools[id].start_time)
-            # print(self.client_pools[id].finish_time)
-            # print(self.client_pools[id].is_finished)
+            print(self.client_pools[id].id)
+            print(self.client_pools[id].current_epoch)
+            print(self.client_pools[id].weight_file)
+            print(self.client_pools[id].bias_file)
+            print(self.client_pools[id].start_time)
+            print(self.client_pools[id].finish_time)
+            print(self.client_pools[id].is_finished)

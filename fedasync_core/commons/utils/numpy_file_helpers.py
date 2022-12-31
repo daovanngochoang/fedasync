@@ -30,4 +30,4 @@ def load_array(filename):
         The NumPy array loaded from the file.
     """
     # Load the array from the specified file using the numpy.load function
-    return np.load(filename)
+    return np.load(filename, allow_pickle=True)

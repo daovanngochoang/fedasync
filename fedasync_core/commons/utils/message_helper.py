@@ -7,7 +7,6 @@ def encode_update_msg(update_message: UpdateMessage) -> str:
         'client_id': update_message.client_id,
         'epoch': update_message.epoch,
         'weight_file': update_message.weight_file,
-        'bias_file': update_message.bias_file,
         'acc': update_message.acc,
         'loss': update_message.loss,
         'start': update_message.start,
@@ -26,7 +25,6 @@ def encode_global_msg(global_message : GlobalMessage) -> str:
         'current_epoch': global_message.current_epoch,
         'n_epochs': global_message.n_epochs,
         'weight_file': global_message.weight_file,
-        'bias_file': global_message.bias_file,
     }
 
     # Convert the dictionary to a JSON string
@@ -43,8 +41,7 @@ def decode_global_msg(message: bytes) -> GlobalMessage:
     body = json.loads(body_str)
 
     output = GlobalMessage(chosen_id=body["chosen_id"], current_epoch=body["current_epoch"],
-                           n_epochs=body['n_epochs'], weight_file=body["weight_file"],
-                           bias_file=body["bias_file"])
+                           n_epochs=body['n_epochs'], weight_file=body["weight_file"])
 
     return output
 
@@ -59,7 +56,7 @@ def decode_update_msg(message: bytes) -> UpdateMessage:
     # Create a new instance of the UpdateMessage class using the fields from the message
     decoded_update_msg = UpdateMessage(
         client_id=body['client_id'], epoch=body["epoch"],
-        weight_file=body['weight_file'], bias_file=body['bias_file'],
+        weight_file=body['weight_file'],
         acc=body['acc'], loss=body['loss'], start=body['start']
     )
 
