@@ -21,8 +21,11 @@ class Server:
         self.client_manager: ClientManager = ClientManager()
 
     def get_msg(self):
+        method_frame: Basic.GetOk
+        header_frame: BasicProperties
         method_frame, header_frame, body = self.channel.basic_get(QueueConfig.SERVER_QUEUE)
-        self.channel.basic_ack(method_frame.delivery_tag)
+        if method_frame:
+            self.channel.basic_ack(method_frame.delivery_tag)
         return method_frame, header_frame, body
 
     def start(self):
@@ -40,6 +43,7 @@ class Server:
                 while method_frame:
                     routing_key = method_frame.routing_key
                     if routing_key == RoutingRules.CLIENTS_REGISTER:
+                        print(method_frame)
                         new_client = Client(id=body.decode())
                         self.client_manager.add_client(new_client)
 
@@ -160,7 +164,7 @@ class Server:
         self.channel.queue_declare(QueueConfig.CLIENT_QUEUE, durable=True)
 
         # create exchange
-        self.channel.exchange_declare(QueueConfig.EXCHANGE, exchange="direct")
+        self.channel.exchange_declare(QueueConfig.EXCHANGE, exchange_type="direct")
 
         # binding server queue to the related reouting key in queue config.
         self.channel.queue_bind(
