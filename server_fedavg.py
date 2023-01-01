@@ -8,7 +8,7 @@ from fedasync_core.server.fedacync_server import Server
 
 # connect to queue
 rabbitmq_connection = pika.BlockingConnection(pika.URLParameters(
-    "amqp://guest:guest@localhost:5672/%2F")
+    "amqps://dmtiiogx:1Pf_J9q3HmJ0Fdo9oYu1H2Jbpk4YAKK4@armadillo.rmq.cloudamqp.com/dmtiiogx")
 )
 
 # Assign config for server.

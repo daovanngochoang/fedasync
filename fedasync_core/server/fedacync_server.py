@@ -149,7 +149,7 @@ class Server:
                     self.client_manager.save_history(self.strategy.current_epoch)
 
                     # If training process is done => break
-                    if self.strategy.is_finish() or self.is_convergent():
+                    if self.strategy.is_finish():
                         print("STOP TRAINING")
                         self.stop()
                         break
@@ -207,9 +207,6 @@ class Server:
         """
         self.channel.close()
         self.connection.close()
-
-    def is_convergent(self):
-        return False
 
     def setup(self) -> None:
         """Connect to queue server and create queue, setup binding key, exchange for queue
