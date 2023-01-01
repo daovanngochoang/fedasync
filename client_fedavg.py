@@ -8,6 +8,7 @@ import pika
 
 from fedasync_core.client.client_server import ClientServer
 from fedasync_core.commons.config import Config
+from fedasync_core.commons.models.cifar10_classification import  *
 from fedasync_core.commons.models.mnist_classification import mnist_classification
 from fedasync_core.commons.utils.numpy_file_helpers import save_array
 
@@ -49,7 +50,7 @@ class ClientTensorflow(ClientServer):
         self.model.set_weights(weights)
 
     def fit(self):
-        self.model.fit(self.data.X_train, self.data.y_train, epochs=self.n_epochs)
+        self.model.fit(self.data.X_train, self.data.y_train, epochs=1)
 
     def evaluate(self):
         # Image Data Generator , we are shifting image accross width and height

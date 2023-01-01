@@ -1,6 +1,6 @@
 class RoutingRules:
     # Binding at client queue
-    NEW_EPOCH: str = "client.training.fit"
+    NEW_EPOCH: str = "client.training.train"
 
     # binding at server queue
     LOCAL_UPDATE: str = "update.to.server"

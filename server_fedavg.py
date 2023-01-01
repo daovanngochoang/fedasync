@@ -1,7 +1,7 @@
 import pika
 
 from fedasync_core.commons.config import Config
-from fedasync_core.commons.models.cifar10_classification_mode import cifar10_classification
+from fedasync_core.commons.models.cifar10_classification import cifar10_classification
 from fedasync_core.commons.models.mnist_classification import mnist_classification
 from fedasync_core.server.strategies.fedavg_tensorflow import FedAvgTensorflow
 from fedasync_core.server.fedacync_server import Server
@@ -30,7 +30,7 @@ fed_avg_tf: FedAvgTensorflow = FedAvgTensorflow(
     convergent_value=0.1
 )
 
-fed_async_server = Server(fed_avg_tf, rabbitmq_connection)
+fed_async_server = Server(fed_avg_tf, rabbitmq_connection, time_out=20)
 
 # start listening and waiting for clients to join
 fed_async_server.start()

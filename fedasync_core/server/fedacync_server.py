@@ -1,6 +1,6 @@
 from fedasync_core.commons.config import *
 from fedasync_core.commons.objects.client import Client
-from fedasync_core.commons.utils.time_helpers import time_now
+from fedasync_core.commons.utils.time_helpers import time_now, time_diff
 from pika.adapters.blocking_connection import BlockingChannel, BlockingConnection
 from pika.spec import Basic, BasicProperties
 import sys, os
@@ -12,7 +12,8 @@ from fedasync_core.server.strategies.strategy import Strategy
 
 class Server:
 
-    def __init__(self, strategy: Strategy, queue_connection: BlockingConnection) -> None:
+    def __init__(self, strategy: Strategy, queue_connection: BlockingConnection, time_rational: float = 0.5,
+                 time_out: int = None) -> None:
 
         self.strategy: Strategy = strategy
         self.connection: BlockingConnection = queue_connection
@@ -20,6 +21,12 @@ class Server:
         self.channel: BlockingChannel = self.connection.channel()
         self.client_manager: ClientManager = ClientManager()
         self.awss3 = AwsS3()
+        self.time_out = time_out
+        self.time_rational = time_rational
+        # starting time of the training process
+        self.start_time: str = ""
+        self.first_finished: str = ""
+        self.latest_finished: str = ""
 
     def get_msg(self):
         method_frame: Basic.GetOk
@@ -47,9 +54,7 @@ class Server:
                         new_client = Client(id=body.decode())
                         self.client_manager.add_client(new_client)
 
-                        print(method_frame)
-                        print(self.client_manager.total())
-                        print(self.client_manager.get_all())
+                        print("{} of clients joined".format(self.client_manager.total()))
 
                         method_frame, header_frame, body = self.get_msg()
 
@@ -59,7 +64,7 @@ class Server:
                 # if enough clients => start training
                 if self.strategy.start_condition(n_available):
                     print("Start training")
-                    self.fit()
+                    self.train()
                     break
 
         except KeyboardInterrupt:
@@ -70,7 +75,7 @@ class Server:
             except SystemExit:
                 os._exit(0)
 
-    def fit(self):
+    def train(self):
         """
         Start training distributed on multiple workers
         """
@@ -100,48 +105,74 @@ class Server:
                     self.awss3.download_awss3_file(file_name=decoded_msg.weight_file)
 
                     # record the time
-                    if (self.strategy.first_finished != "" and self.strategy.latest_finished) != "":
-                        self.strategy.first_finished = self.strategy.latest_finished = time_now()
-                    elif self.strategy.first_finished != "":
-                        self.strategy.latest_finished = time_now()
+                    if (self.first_finished and self.latest_finished) == "":
+                        now = time_now()
+                        self.first_finished = now
+                        self.latest_finished = now
+                    elif self.first_finished != "":
+                        self.latest_finished = time_now()
 
                     # update client stage
                     self.client_manager.update_local_params(decoded_msg)
 
-                    print("start_time: ", self.strategy.start_time)
-                    print("first_finished: ", self.strategy.first_finished)
-                    print("latest_finished: ", self.strategy.latest_finished)
-                    print("\n\n")
-
             """------------------------Checking for update-------------------------------"""
             # Check the update condition asynchronously
-            print("current epoch: ", self.strategy.current_epoch)
             finished_clients = self.client_manager.filter_finished_clients_by_epoch(self.strategy.current_epoch)
 
-            print("Total finished: ", len(finished_clients))
-
             # if the update condition is true
-            if self.strategy.check_update(len(finished_clients)):
+            if self.strategy.is_min_clients_completed(len(finished_clients)):
 
-                # Update
-                print("Aggregate")
-                self.strategy.aggregate(finished_clients)
+                # get time from start to first and latest finished client
+                t1 = time_diff(self.start_time, self.first_finished)
+                t2 = time_diff(self.start_time, self.latest_finished)
 
-                # Save value to history
-                self.client_manager.save_history(self.strategy.current_epoch)
+                # get avg complete time
+                avg = (t2 + t1) / len(finished_clients)
 
-                # if training process is not finished => new epoch
-                if not (self.strategy.is_finish()):
-                    print("NEW EPOCH")
-                    self.new_epoch()
+                # get time bound
+                time_bound = avg + (self.time_rational * avg)
 
-                # If training process is done => break
-                elif self.strategy.is_finish():
-                    print("STOP TRAINING")
+                # get time up to now
+                now = time_now()
+                until_now = time_diff(self.start_time, now)
+
+                # if until now > time bound => update
+                time_cond = until_now > time_bound
+
+                if time_cond:
+
+                    # Update
+                    print("Aggregate")
+                    self.strategy.aggregate(finished_clients)
+
+                    # Save value to history
+                    self.client_manager.save_history(self.strategy.current_epoch)
+
+                    # If training process is done => break
+                    if self.strategy.is_finish() or self.is_convergent():
+                        print("STOP TRAINING")
+                        self.stop()
+                        break
+                    # if training process is not finished => new epoch
+                    elif not (self.strategy.is_finish()):
+                        print("NEW EPOCH")
+                        self.new_epoch()
+
+            if self.time_out is not None and len(finished_clients) == 0:
+                until_now = time_diff(self.start_time, time_now())
+                print(until_now)
+                if until_now > self.time_out:
+                    print("TIME OUT!")
                     self.stop()
                     break
 
     def new_epoch(self):
+
+        self.start_time = time_now()
+        self.first_finished = ""
+        self.latest_finished = ""
+        self.strategy.current_epoch += 1
+
         # Generate new params
         global_weight_file = self.strategy.initialize_parameters()
 
@@ -176,6 +207,9 @@ class Server:
         """
         self.channel.close()
         self.connection.close()
+
+    def is_convergent(self):
+        return False
 
     def setup(self) -> None:
         """Connect to queue server and create queue, setup binding key, exchange for queue
