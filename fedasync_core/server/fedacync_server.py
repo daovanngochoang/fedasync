@@ -118,7 +118,7 @@ class Server:
             print("current epoch: ", self.strategy.current_epoch)
             finished_clients = self.client_manager.filter_finished_clients_by_epoch(self.strategy.current_epoch)
 
-            print(self.strategy.check_update(len(finished_clients)))
+            print("Total finished: ", len(finished_clients))
 
             # if the update condition is true
             if self.strategy.check_update(len(finished_clients)):

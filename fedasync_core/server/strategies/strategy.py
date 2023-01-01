@@ -89,9 +89,6 @@ class Strategy(ABC):
             2. We use the time measurement technique
         """
         time_cond = False
-        print("total finished: ", total_finished)
-        print("Min clients: ", self.min_update_clients)
-        print("total_finished >= self.min_update_clients", total_finished >= self.min_update_clients)
 
         if total_finished >= self.min_update_clients:
             t1 = time_diff(self.start_time, self.first_finished)
@@ -100,14 +97,12 @@ class Strategy(ABC):
             # get avg complete time
             avg = (t2 + t1) / total_finished
             time_bound = avg + (self.time_rational * avg)
-            print("time_bound: ", time_bound)
 
             # get time up to now
             now = time_now()
             until_now = time_diff(self.start_time, now)
 
             time_cond = until_now > time_bound
-            print("until_now: ", until_now)
 
         return time_cond
 

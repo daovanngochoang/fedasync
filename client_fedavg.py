@@ -8,7 +8,7 @@ import pika
 
 from fedasync_core.client.client_server import ClientServer
 from fedasync_core.commons.config import Config
-from fedasync_core.commons.models.cifar10_classification_mode import cifar10_classification
+from fedasync_core.commons.models.mnist_classification import mnist_classification
 from fedasync_core.commons.utils.numpy_file_helpers import save_array
 
 rabbitmq_connection = pika.BlockingConnection(pika.URLParameters(
@@ -27,23 +27,18 @@ class ClientTensorflow(ClientServer):
     def __init__(self, n_epochs, queue_connection: BlockingConnection):
         super().__init__(n_epochs, queue_connection)
 
-        self.data: Dict[int, Data] = {}
+        self.data = None
 
     def data_preprocessing(self):
-        (train_images, train_labels), (test_images, test_labels) = datasets.cifar10.load_data()
-        # Normalize pixel values to be between 0 and 1
-        train_images, test_images = train_images / 255.0, test_images / 255.0
+        (x_train, y_train), (x_test, y_test) = datasets.mnist.load_data()
 
-        for i in range(self.n_epochs):
-            self.data[i] = Data(
-                X_train=train_images[int(len(train_images) / 10) * i:int(len(train_images) / 10) * (i + 1)],
-                y_train=train_labels[int(len(train_labels) / 10) * i:int(len(train_labels) / 10) * (i + 1)],
-                X_test=test_images[int(len(test_images) / 10) * i:int(len(test_images) / 10) * (i + 1)],
-                y_test=test_labels[int(len(test_labels) / 10) * i:int(len(test_labels) / 10) * (i + 1)]
-            )
+        # Normalize pixel values to be between 0 and 1
+        x_train, x_test = x_train / 255.0, x_test / 255.0
+
+        self.data = Data(x_train, y_train, x_test, y_test)
 
     def create_model(self):
-        self.model = cifar10_classification
+        self.model = mnist_classification
 
     def get_weights(self) -> None:
         # get weight and bias of the model
@@ -54,22 +49,14 @@ class ClientTensorflow(ClientServer):
         self.model.set_weights(weights)
 
     def fit(self):
-        data: Data = self.data[self.client_epoch]
-        # Image Data Generator , we are shifting image across width and height
-        # also we are flipping the image horizontally.
-        datagen = ImageDataGenerator(width_shift_range=0.1, height_shift_range=0.1, horizontal_flip=True,
-                                     rotation_range=20)
-        it_train = datagen.flow(data.X_train, data.y_train)
-        self.model.fit(it_train, epochs=10)
+        self.model.fit(self.data.X_train, self.data.y_train, epochs=self.n_epochs)
 
     def evaluate(self):
-        data: Data = self.data[self.client_epoch]
         # Image Data Generator , we are shifting image accross width and height
         # also we are flipping the image horizantally.
-        datagen = ImageDataGenerator(width_shift_range=0.1, height_shift_range=0.1, horizontal_flip=True,
-                                     rotation_range=20)
-        it_eval = datagen.flow(data.X_test, data.y_test)
-        self.loss, self.acc = self.model.evaluate(it_eval, epochs=10)
+
+        self.loss, self.acc = self.model.evaluate(self.data.X_train, self.data.y_train)
+        print("loss: {} \nacc: {}\n".format(self.loss, self.acc))
 
 
 class Data:
@@ -80,6 +67,6 @@ class Data:
         self.y_test = y_test
 
 
-client = ClientTensorflow(10, rabbitmq_connection)
+client = ClientTensorflow(3, rabbitmq_connection)
 
 client.start_listen()

@@ -82,15 +82,15 @@ class ClientServer(ABC):
                     print(self.model.summary())
                     # break
 
-                    # self.data_preprocessing()
+                    self.data_preprocessing()
 
                     print("Fit")
                     # train
-                    # self.fit()
+                    self.fit()
 
                     # eval
                     print("Evaluate")
-                    # self.evaluate()
+                    self.evaluate()
 
                     sleep(5)
 

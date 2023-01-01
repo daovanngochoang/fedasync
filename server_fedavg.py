@@ -2,6 +2,7 @@ import pika
 
 from fedasync_core.commons.config import Config
 from fedasync_core.commons.models.cifar10_classification_mode import cifar10_classification
+from fedasync_core.commons.models.mnist_classification import mnist_classification
 from fedasync_core.server.strategies.fedavg_tensorflow import FedAvgTensorflow
 from fedasync_core.server.fedacync_server import Server
 
@@ -18,12 +19,12 @@ Config.BUCKET_NAME = "fedasync"
 
 
 # create tensor flow model
-model = cifar10_classification
+model = mnist_classification
 
 # strategy
 fed_avg_tf: FedAvgTensorflow = FedAvgTensorflow(
     model,
-    n_epochs=5,
+    n_epochs=3,
     min_fit_clients=3,
     min_update_clients=2,
     convergent_value=0.1
