@@ -1,7 +1,8 @@
 # Import the NumPy library as np
 import numpy as np
 import boto3
-from fedasync_core.commons.config import Config
+
+from fedasync_core.commons import Config
 
 
 class AwsS3:

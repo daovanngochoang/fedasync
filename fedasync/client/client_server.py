@@ -1,16 +1,12 @@
 from abc import ABC, abstractmethod
 from time import sleep
 
-import numpy as np
 from pika import BlockingConnection
 from pika.adapters.blocking_connection import BlockingChannel
 from pika.spec import Basic, BasicProperties
-from fedasync_core.commons.utils.time_helpers import time_now
-from fedasync_core.commons.config import QueueConfig, RoutingRules, Config
-from fedasync_core.commons.utils.message_helper import *
-from fedasync_core.commons.utils.awss3_file_manager import AwsS3
+from fedasync_core.commons import QueueConfig, RoutingRules
+from fedasync_core.commons.utils import *
 import uuid
-from fedasync_core.commons.utils.numpy_file_helpers import *
 
 
 class ClientServer(ABC):
@@ -80,7 +76,6 @@ class ClientServer(ABC):
                     self.set_weights(weights)
 
                     print(self.model.summary())
-                    # break
 
                     self.data_preprocessing()
 

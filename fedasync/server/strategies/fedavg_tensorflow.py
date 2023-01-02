@@ -1,8 +1,7 @@
 import numpy as np
 
-from fedasync_core.commons.utils.awss3_file_manager import AwsS3 as wf
-from fedasync_core.commons.utils.numpy_file_helpers import save_array
-from fedasync_core.server.strategies.fedavg import FedAvg
+from fedasync_core.commons.utils import save_array
+from fedasync_core.server.strategies import FedAvg
 
 
 class FedAvgTensorflow(FedAvg):

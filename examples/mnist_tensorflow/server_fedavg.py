@@ -1,10 +1,9 @@
 import pika
 
-from fedasync_core.commons.config import Config
-from fedasync_core.commons.models.cifar10_classification import cifar10_classification
-from fedasync_core.commons.models.mnist_classification import mnist_classification
-from fedasync_core.server.strategies.fedavg_tensorflow import FedAvgTensorflow
-from fedasync_core.server.fedacync_server import Server
+from fedasync.commons import Config
+from fedasync.commons.models import mnist_classification
+from fedasync.server.strategies import FedAvgTensorflow
+from fedasync.server import Server
 
 # connect to queue
 rabbitmq_connection = pika.BlockingConnection(pika.URLParameters(

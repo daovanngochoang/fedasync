@@ -1,13 +1,11 @@
 from fedasync_core.commons.config import *
-from fedasync_core.commons.objects.client import Client
-from fedasync_core.commons.utils.time_helpers import time_now, time_diff
+from fedasync_core.commons.objects import Client
 from pika.adapters.blocking_connection import BlockingChannel, BlockingConnection
 from pika.spec import Basic, BasicProperties
 import sys, os
-from fedasync_core.commons.utils.message_helper import *
-from fedasync_core.commons.utils.awss3_file_manager import *
-from fedasync_core.server.client_manager import ClientManager
-from fedasync_core.server.strategies.strategy import Strategy
+from fedasync_core.commons.utils import *
+from fedasync_core.server import ClientManager
+from fedasync_core.server.strategies import Strategy
 
 
 class Server:
@@ -55,6 +53,7 @@ class Server:
                         self.client_manager.add_client(new_client)
 
                         print("{} of clients joined".format(self.client_manager.total()))
+                        print(self.client_manager.get_clients_to_list())
 
                         method_frame, header_frame, body = self.get_msg()
 
@@ -114,6 +113,7 @@ class Server:
 
                     # update client stage
                     self.client_manager.update_local_params(decoded_msg)
+                    print(self.client_manager.get_clients_to_list())
 
             """------------------------Checking for update-------------------------------"""
             # Check the update condition asynchronously
@@ -160,7 +160,6 @@ class Server:
 
             if self.time_out is not None and len(finished_clients) == 0:
                 until_now = time_diff(self.start_time, time_now())
-                print(until_now)
                 if until_now > self.time_out:
                     print("TIME OUT!")
                     self.stop()

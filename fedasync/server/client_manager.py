@@ -1,7 +1,7 @@
 from typing import Dict
-from fedasync_core.commons.objects.messages import UpdateMessage
-from fedasync_core.commons.objects.client import Client
-from fedasync_core.commons.utils.time_helpers import time_now
+from fedasync_core.commons.objects import UpdateMessage
+from fedasync_core.commons.objects import Client
+from fedasync_core.commons.utils import time_now
 
 
 class ClientManager:
@@ -40,6 +40,9 @@ class ClientManager:
                client_pools attribute, keyed by client id.
         """
         return self.client_pools
+
+    def get_clients_to_list(self):
+        return [self.client_pools[id].__str__() for id in self.client_pools]
 
     def filter_by_epoch(self, epoch: int) -> Dict[str, Client]:
         """Filter the clients by epoch.
@@ -110,6 +113,9 @@ class ClientManager:
         self.client_pools[client_id].start_time = msg_obj.start
         self.client_pools[client_id].finish_time = time_now()
         self.client_pools[client_id].is_finished = True
+
+
+
 
     def get_available(self):
         """Get the number of available (finished) clients.
