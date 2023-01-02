@@ -1,3 +1,4 @@
 from keras import datasets
+import tensorflow as tf 
 
-datasets.cifar10.load_data()
+tf.keras.datasets.cifar10.load_data()
