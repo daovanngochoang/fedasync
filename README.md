@@ -53,3 +53,16 @@ docker run --rm -it --name rabbitmq -p 15672:15672 -p 5672:5672 rabbitmq:3-manag
 pip install requirement.txt
 
 ```
+
+## Run MNIST classification example
+```bash
+cd examples/mnist_tensorflow
+python download_data.py
+python server_fedavg.py
+```
+
+open 3 shell/terminal then run 
+```bash
+python client_fedavg.py
+```
+
