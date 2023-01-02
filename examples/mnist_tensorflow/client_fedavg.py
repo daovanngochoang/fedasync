@@ -5,10 +5,10 @@ from pika import BlockingConnection
 from keras import datasets
 import pika
 
-from ...fedasync.client import ClientServer
-from ...fedasync.commons import Config
-from ...fedasync.commons.models import *
-from ...fedasync.commons.utils import save_array
+from fedasync.client import ClientServer
+from fedasync.commons import Config
+from fedasync.commons.models import *
+from fedasync.commons.utils import save_array
 
 rabbitmq_connection = pika.BlockingConnection(pika.URLParameters(
     "amqps://dmtiiogx:1Pf_J9q3HmJ0Fdo9oYu1H2Jbpk4YAKK4@armadillo.rmq.cloudamqp.com/dmtiiogx")
