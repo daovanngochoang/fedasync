@@ -1,2 +1,0 @@
-from .cifar10_classification import cifar10_classification
-from .mnist_classification import mnist_classification
