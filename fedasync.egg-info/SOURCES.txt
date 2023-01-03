@@ -1,5 +1,5 @@
 README.md
-setup.py
+make_fedasync_global.py
 fedasync/__init__.py
 fedasync.egg-info/PKG-INFO
 fedasync.egg-info/SOURCES.txt

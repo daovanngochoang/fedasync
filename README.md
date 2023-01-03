@@ -47,11 +47,10 @@ simply run:
 docker run --rm -it --name rabbitmq -p 15672:15672 -p 5672:5672 rabbitmq:3-management
 ```
 
-## Install Dependencies
+## Install Dependencies, setup Development environment
 
 ```bash
-pip install requirement.txt
-
+./setup.sh
 ```
 
 ## Run MNIST classification example
@@ -61,7 +60,7 @@ python download_data.py
 python server_fedavg.py
 ```
 
-open 3 shell/terminal then run 
+open 3 shells/terminals then run 
 ```bash
 python client_fedavg.py
 ```
