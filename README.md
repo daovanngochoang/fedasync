@@ -48,7 +48,9 @@ docker run --rm -it --name rabbitmq -p 15672:15672 -p 5672:5672 rabbitmq:3-manag
 ```
 
 ## Install Dependencies, setup Development environment
-
+1. Python version should be 3.8.
+2. Conda environment is recommended.
+3. Perfectly work on linux.
 ```bash
 ./setup.sh
 ```
