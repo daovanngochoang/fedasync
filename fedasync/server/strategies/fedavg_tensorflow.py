@@ -9,8 +9,7 @@ class FedAvgTensorflow(FedAvg):
     def __init__(self, model, n_epochs: int = 3, min_update_clients: int = 3, min_fit_clients: int = 3,
                  convergent_value: float = 0.1):
         super().__init__(model, n_epochs, min_update_clients, min_fit_clients, convergent_value)
-        print(self.min_update_clients)
-        print(self.min_fit_clients)
+
 
     def evaluate(self):
         pass

@@ -32,6 +32,11 @@ class Strategy(ABC):
 
         self.tmp = Config.TMP_FOLDER
         self.path_to_weights_file = self.tmp + self.global_weights_file
+        
+        print("\n\n------------------------------START FEDASYNC------------------------------------------\n\n")
+
+        print("Min number of clients condition to start training: ",self.min_fit_clients)
+        print("Min number of clients to start aggregating: ", self.min_update_clients)
 
     def initialize_parameters(self):
         """Initialize the global parameters.

@@ -39,6 +39,7 @@ class Server:
         # connect to queue server and create queue
         self.setup()
 
+
         try:
             while True:
                 method_frame: Basic.GetOk
@@ -52,8 +53,8 @@ class Server:
                         new_client = Client(id=body.decode())
                         self.client_manager.add_client(new_client)
 
-                        print("{} of clients joined".format(self.client_manager.total()))
-                        print(self.client_manager.get_clients_to_list())
+                        print("{} of clients {} joined".format(self.client_manager.total(), self.strategy.min_fit_clients))
+                        # print(self.client_manager.get_clients_to_list())
 
                         method_frame, header_frame, body = self.get_msg()
 
@@ -62,7 +63,8 @@ class Server:
 
                 # if enough clients => start training
                 if self.strategy.start_condition(n_available):
-                    print("Start training")
+                    print("\n\n")
+                    print("START TRAINING ...")
                     self.train()
                     break
 
@@ -78,6 +80,7 @@ class Server:
         """
         Start training distributed on multiple workers
         """
+
         # start new epoch
         self.strategy.get_model_weights()
         self.new_epoch()
@@ -113,7 +116,8 @@ class Server:
 
                     # update client stage
                     self.client_manager.update_local_params(decoded_msg)
-                    print(self.client_manager.get_clients_to_list())
+                    # print(self.client_manager.get_clients_to_list())
+                    print("Completed Clients", len(self.client_manager.filter_finished_clients_by_epoch(self.strategy.current_epoch)))
 
             """------------------------Checking for update-------------------------------"""
             # Check the update condition asynchronously
@@ -142,7 +146,7 @@ class Server:
                 if time_cond:
 
                     # Update
-                    print("Aggregate")
+                    print("AGGREGATE \n")
                     self.strategy.aggregate(finished_clients)
 
                     # Save value to history
@@ -155,7 +159,7 @@ class Server:
                         break
                     # if training process is not finished => new epoch
                     elif not (self.strategy.is_finish()):
-                        print("NEW EPOCH")
+                        print("NEW ROUND")
                         self.new_epoch()
 
             if self.time_out is not None and len(finished_clients) == 0:
@@ -242,6 +246,7 @@ class Server:
     def send_to_clients(self, routing_key: str, body) -> None:
         """Send message with routing key
         """
+        print("Send to all Clients")
         self.channel.basic_publish(
             exchange=QueueConfig.EXCHANGE,
             routing_key=routing_key,
