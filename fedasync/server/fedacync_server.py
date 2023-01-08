@@ -105,14 +105,19 @@ class Server:
 
                     # get the weight and bias from s3
                     self.awss3.download_awss3_file(file_name=decoded_msg.weight_file)
+                    
+                    if decoded_msg.epoch == self.strategy.current_epoch:
 
-                    # record the time
-                    if (self.first_finished and self.latest_finished) == "":
-                        now = time_now()
-                        self.first_finished = now
-                        self.latest_finished = now
-                    elif self.first_finished != "":
-                        self.latest_finished = time_now()
+                        # record the time
+                        if (self.first_finished and self.latest_finished) == "":
+                            now = time_now()
+                            self.first_finished = now
+                            self.latest_finished = now
+                            
+                        elif self.first_finished != "":
+                            self.latest_finished = time_now()
+
+                        print("start: {} first: {} latest: {}".format(self.start_time, self.first_finished, self.latest_finished))
 
                     # update client stage
                     self.client_manager.update_local_params(decoded_msg)
@@ -123,30 +128,40 @@ class Server:
             # Check the update condition asynchronously
             finished_clients = self.client_manager.filter_finished_clients_by_epoch(self.strategy.current_epoch)
 
-            # if the update condition is true
+            # if number of finished client
             if self.strategy.is_min_clients_completed(len(finished_clients)):
+                
+                cond = False
+                
+                if len(finished_clients) >= self.strategy.min_fit_clients:
+                    cond = True
+                
+                else:
+                    # get time from start to first and latest finished client
+                    t1 = time_diff(self.start_time, self.first_finished)
+                    t2 = time_diff(self.start_time, self.latest_finished)
 
-                # get time from start to first and latest finished client
-                t1 = time_diff(self.start_time, self.first_finished)
-                t2 = time_diff(self.start_time, self.latest_finished)
+                    # get avg complete time
+                    avg = (t2 + t1) / 2
 
-                # get avg complete time
-                avg = (t2 + t1) / len(finished_clients)
+                    # get time bound
+                    time_bound = avg + (self.time_rational * avg)
 
-                # get time bound
-                time_bound = avg + (self.time_rational * avg)
+                    # get time up to now
+                    now = time_now()
+                    until_now = time_diff(self.start_time, now)
 
-                # get time up to now
-                now = time_now()
-                until_now = time_diff(self.start_time, now)
+                    # if until now > time bound => update
+                    time_cond = until_now > time_bound
+                    print("time bound {} now {}".format(time_bound, until_now))
+                    
+                    cond = time_cond
+                    
 
-                # if until now > time bound => update
-                time_cond = until_now > time_bound
-
-                if time_cond:
+                if cond:
 
                     # Update
-                    print("AGGREGATE \n")
+                    print("AGGREGATE for {}\n".format(len(finished_clients)))
                     self.strategy.aggregate(finished_clients)
 
                     # Save value to history
@@ -190,6 +205,7 @@ class Server:
         # update min update.
         if self.strategy.current_epoch > 1:
             self.strategy.min_update_clients = int(len(chosen_id) / 2)
+            print("min cli for the next round: {}".format(self.strategy.min_update_clients))
 
         # create msg object
         msg = GlobalMessage(chosen_id=chosen_id, current_epoch=self.strategy.current_epoch,

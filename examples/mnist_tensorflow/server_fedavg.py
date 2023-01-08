@@ -24,12 +24,12 @@ model = mnist_classification
 fed_avg_tf: FedAvgTensorflow = FedAvgTensorflow(
     model,
     n_epochs=3,
-    min_fit_clients=3,
-    min_update_clients=2,
+    min_fit_clients=6,
+    min_update_clients=4,
     convergent_value=0.1
 )
 
-fed_async_server = Server(fed_avg_tf, rabbitmq_connection, time_out=20)
+fed_async_server = Server(fed_avg_tf, rabbitmq_connection, time_out=40)
 
 # start listening and waiting for clients to join
 fed_async_server.start()
