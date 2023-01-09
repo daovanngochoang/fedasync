@@ -155,7 +155,7 @@ class ClientManager:
             print(self.client_pools[id].id)
             print(self.client_pools[id].current_epoch)
             print(self.client_pools[id].weight_file)
-            print(self.client_pools[id].bias_file)
+            # print(self.client_pools[id].bias_file)
             print(self.client_pools[id].start_time)
             print(self.client_pools[id].finish_time)
             print(self.client_pools[id].is_finished)

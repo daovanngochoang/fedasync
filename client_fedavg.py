@@ -13,8 +13,12 @@ import pickle
 import os
 
 
+# rabbitmq_connection = pika.BlockingConnection(pika.URLParameters(
+#     "amqp://guest:guest@localhost:5672/%2F")
+# )
+# connect to queue
 rabbitmq_connection = pika.BlockingConnection(pika.URLParameters(
-    "amqp://guest:guest@localhost:5672/%2F")
+    "amqps://dmtiiogx:1Pf_J9q3HmJ0Fdo9oYu1H2Jbpk4YAKK4@armadillo.rmq.cloudamqp.com/dmtiiogx")
 )
 
 # Assign config for server.
@@ -29,7 +33,7 @@ class ClientTensorflow(ClientServer):
     def __init__(self, n_epochs, queue_connection: BlockingConnection, num_dataset: int):
         super().__init__(n_epochs, queue_connection)
         self.create_model()
-        self.data_processing(num_dataset)
+        self.data_preprocessing(num_dataset)
 
 
     # load data from data folder 

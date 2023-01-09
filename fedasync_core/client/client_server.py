@@ -145,7 +145,7 @@ class ClientServer(ABC):
         pass
 
     @abstractmethod
-    def data_preprocessing(self):
+    def data_preprocessing(self, num_dataset):
         """
 
         Returns
