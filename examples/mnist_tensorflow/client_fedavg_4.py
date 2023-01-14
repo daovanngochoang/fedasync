@@ -21,8 +21,7 @@ Config.AWS_ACCESS_KEY_ID = "AKIARUCJKIXKV24ZV553"
 Config.AWS_SECRET_ACCESS_KEY = "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"
 Config.BUCKET_NAME = "fedasync"
 
-ClientConfig.cli_id = "hoangdao.1902093.worker2"
-
+ClientConfig.cli_id = "hoangdao.1902093.worker4"
 
 class ClientTensorflow(ClientServer):
 

@@ -44,7 +44,7 @@ class ClientTensorflow(ClientServer):
     def get_weights(self) -> None:
         # get weight and bias of the model
         weights = self.model.get_weights()
-        save_array(np.array(weights, dtype=object), self.path_to_weights)
+        save_array(np.array(weights, dtype=object), self.path_to_weights())
 
     def set_weights(self, weights):
         self.model.set_weights(weights)

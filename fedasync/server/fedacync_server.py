@@ -120,6 +120,8 @@ class Server:
                     decoded_msg = decode_update_msg(body)
 
                     # get the weight and bias from s3
+                    print(decoded_msg.weight_file)
+
                     self.awss3.download_awss3_file(file_name=decoded_msg.weight_file)
 
                     if decoded_msg.epoch == self.strategy.current_epoch:

@@ -42,11 +42,10 @@ class FedAvgMnistTensor(FedAvgTensorflow):
 fed_avg_tf = FedAvgMnistTensor(
     model,
     n_epochs=3,
-    min_fit_clients=3,
-    min_update_clients=2,
+    min_fit_clients=6,
+    min_update_clients=3,
     convergent_value=0.1
 )
-ids_file = "ids"
 
 fed_async_server = Server(fed_avg_tf, rabbitmq_connection, time_out=40)
 

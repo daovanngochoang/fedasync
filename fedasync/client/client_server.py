@@ -34,9 +34,17 @@ class ClientServer(ABC):
         self.start: str = ""
         self.end: str = ""
         self.awss3 = AwsS3()
-        self.weight_file: str = "{}_{}_{}.weights.npy".format(self.prefix, self.id, self.client_epoch)
 
-        self.path_to_weights = self.awss3.tmp + self.weight_file
+        # self.path_to_weights = self.awss3.tmp + self.weight_file
+
+    def path_to_weights(self):
+        weight_file = self.get_weights_file()
+        path_to_weights = self.awss3.tmp + weight_file
+        return path_to_weights
+
+    def get_weights_file(self):
+        weight_file: str = "{}_{}_{}.weights.npy".format(self.prefix, self.id, self.client_epoch)
+        return weight_file
 
     def start_listen(self) -> None:
         """Listen to training events
@@ -72,7 +80,7 @@ class ClientServer(ABC):
                     print("local epoch: ", self.client_epoch)
                     print("server epoch: ", global_msg.current_epoch)
                     self.start = time_now()
-
+                    self.client_epoch = global_msg.current_epoch
                     self.create_model()
 
                     self.awss3.download_awss3_file(global_msg.weight_file)
@@ -98,16 +106,15 @@ class ClientServer(ABC):
                     self.get_weights()
 
                     # upload to aws s3 first.
-                    self.awss3.upload_file_to_awss3(self.weight_file)
+                    self.awss3.upload_file_to_awss3(self.get_weights_file())
 
                     # get the end time
                     self.end = time_now()
 
-                    self.client_epoch = global_msg.current_epoch
                     # Generate update msg
                     update_msg = UpdateMessage(
                         client_id=self.id, epoch=self.client_epoch,
-                        weight_file=self.weight_file,
+                        weight_file=self.get_weights_file(),
                         acc=self.acc, loss=self.loss, start=self.start
                     )
 
