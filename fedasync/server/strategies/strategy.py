@@ -32,10 +32,10 @@ class Strategy(ABC):
 
         self.tmp = Config.TMP_FOLDER
         self.path_to_weights_file = self.tmp + self.global_weights_file
-        
+
         print("\n\n------------------------------START FEDASYNC------------------------------------------\n\n")
 
-        print("Min number of clients condition to start training: ",self.min_fit_clients)
+        print("Min number of clients condition to start training: ", self.min_fit_clients)
         print("Min number of clients to start aggregating: ", self.min_update_clients)
 
     def initialize_parameters(self):
@@ -63,6 +63,14 @@ class Strategy(ABC):
     def get_model_weights(self):
         """
         """
+
+    @abstractmethod
+    def set_model_weights(self, weights):
+        pass
+
+    @abstractmethod
+    def data_preprocessing(self):
+        pass
 
     def is_min_clients_completed(self, total_finished: int):
         return total_finished >= self.min_update_clients

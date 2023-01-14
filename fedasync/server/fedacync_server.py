@@ -15,16 +15,21 @@ class Server:
 
         self.strategy: Strategy = strategy
         self.connection: BlockingConnection = queue_connection
+        self.client_list: list = []
 
         self.channel: BlockingChannel = self.connection.channel()
         self.client_manager: ClientManager = ClientManager()
         self.awss3 = AwsS3()
         self.time_out = time_out
         self.time_rational = time_rational
+
         # starting time of the training process
         self.start_time: str = ""
         self.first_finished: str = ""
         self.latest_finished: str = ""
+
+        # get ids and add to client manager.
+        # self.get_ids(id_file)
 
     def get_msg(self):
         method_frame: Basic.GetOk
@@ -34,11 +39,16 @@ class Server:
             self.channel.basic_ack(method_frame.delivery_tag)
         return method_frame, header_frame, body
 
+    # def get_ids(self, file_name):
+    #     with open(file_name) as f:
+    #         for line in f:
+    #             id = line.strip()
+    #             self.client_manager.add_client(Client(id))
+
     def start(self):
 
         # connect to queue server and create queue
         self.setup()
-
 
         try:
             while True:
@@ -53,8 +63,9 @@ class Server:
                         new_client = Client(id=body.decode())
                         self.client_manager.add_client(new_client)
 
-                        print("{} of clients {} joined".format(self.client_manager.total(), self.strategy.min_fit_clients))
-                        # print(self.client_manager.get_clients_to_list())
+                        print("{} of clients {} joined".format(self.client_manager.total(),
+                                                               self.strategy.min_fit_clients))
+                        print(self.client_manager.get_clients_to_list())
 
                         method_frame, header_frame, body = self.get_msg()
 
@@ -97,6 +108,11 @@ class Server:
             if method_frame:
                 routing_key = method_frame.routing_key
 
+                # if any client join or reconnect in the middle of training process. 
+                if routing_key == RoutingRules.CLIENTS_REGISTER:
+                    new_client = Client(id=body.decode())
+                    self.client_manager.add_client(new_client)
+
                 # update prams routing key
                 if routing_key == RoutingRules.LOCAL_UPDATE:
                     print("RECEIVE UPDATE")
@@ -105,7 +121,7 @@ class Server:
 
                     # get the weight and bias from s3
                     self.awss3.download_awss3_file(file_name=decoded_msg.weight_file)
-                    
+
                     if decoded_msg.epoch == self.strategy.current_epoch:
 
                         # record the time
@@ -113,29 +129,36 @@ class Server:
                             now = time_now()
                             self.first_finished = now
                             self.latest_finished = now
-                            
+
                         elif self.first_finished != "":
                             self.latest_finished = time_now()
 
-                        print("start: {} first: {} latest: {}".format(self.start_time, self.first_finished, self.latest_finished))
+                        print("start: {} first: {} latest: {}".format(self.start_time, self.first_finished,
+                                                                      self.latest_finished))
 
                     # update client stage
-                    self.client_manager.update_local_params(decoded_msg)
-                    # print(self.client_manager.get_clients_to_list())
-                    print("Completed Clients", len(self.client_manager.filter_finished_clients_by_epoch(self.strategy.current_epoch)))
+                    if decoded_msg.epoch < self.strategy.current_epoch:
+                        self.client_manager.save_late_update(decoded_msg)
+                    else:
+                        self.client_manager.update_local_params(decoded_msg)
+                        print("{} Completed Clients in round {}: ".format(
+                            len(self.client_manager.filter_finished_clients_by_epoch(self.strategy.current_epoch)),
+                              self.strategy.current_epoch))
 
-            """------------------------Checking for update-------------------------------"""
+                    # print(self.client_manager.get_clients_to_list())
+
+            """------------------------Checking for update------------------------------"""
             # Check the update condition asynchronously
             finished_clients = self.client_manager.filter_finished_clients_by_epoch(self.strategy.current_epoch)
 
             # if number of finished client
             if self.strategy.is_min_clients_completed(len(finished_clients)):
-                
+
                 cond = False
-                
+
                 if len(finished_clients) >= self.strategy.min_fit_clients:
                     cond = True
-                
+
                 else:
                     # get time from start to first and latest finished client
                     t1 = time_diff(self.start_time, self.first_finished)
@@ -154,15 +177,23 @@ class Server:
                     # if until now > time bound => update
                     time_cond = until_now > time_bound
                     print("time bound {} now {}".format(time_bound, until_now))
-                    
+
                     cond = time_cond
-                    
 
                 if cond:
 
                     # Update
                     print("AGGREGATE for {}\n".format(len(finished_clients)))
                     self.strategy.aggregate(finished_clients)
+
+                    # eval
+                    print("EVALUATE\n")
+                    weights = load_array(self.awss3.tmp + self.strategy.global_weights_file)
+
+                    self.strategy.set_model_weights(weights)
+                    print(self.strategy.model.summary())
+
+                    self.strategy.evaluate()
 
                     # Save value to history
                     self.client_manager.save_history(self.strategy.current_epoch)
@@ -182,6 +213,7 @@ class Server:
                 if until_now > self.time_out:
                     print("TIME OUT!")
                     self.stop()
+                    self.client_manager.history_to_file()
                     break
 
     def new_epoch(self):
@@ -199,8 +231,9 @@ class Server:
 
         # select clients
         chosen_id = self.strategy.select_client(self.client_manager.get_all())
+        print("workers that can join for the next round: {}".format(chosen_id))
 
-        self.client_manager.make_available(chosen_id)
+        self.client_manager.set_finished_status(chosen_id)
 
         # update min update.
         if self.strategy.current_epoch > 1:

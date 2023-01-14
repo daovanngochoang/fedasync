@@ -9,16 +9,20 @@ from fedasync.commons.utils import *
 import uuid
 
 
+class ClientConfig:
+    cli_id = None
+
+
 class ClientServer(ABC):
 
     def __init__(self, n_epochs: int, queue_connection: BlockingConnection) -> None:
         self.connection: BlockingConnection = queue_connection
 
         # never change
-        self.id: str = str(uuid.uuid4())
-        self.prefix = str(uuid.uuid4())
+        self.id = None
 
-        self.weight_file: str = "{}_{}.weights.npy".format(self.prefix, self.id)
+        self.id: str = str(uuid.uuid4()) if ClientConfig.cli_id is None else ClientConfig.cli_id
+        self.prefix = str(uuid.uuid4())
 
         self.model = None
 
@@ -30,6 +34,8 @@ class ClientServer(ABC):
         self.start: str = ""
         self.end: str = ""
         self.awss3 = AwsS3()
+        self.weight_file: str = "{}_{}_{}.weights.npy".format(self.prefix, self.id, self.client_epoch)
+
         self.path_to_weights = self.awss3.tmp + self.weight_file
 
     def start_listen(self) -> None:

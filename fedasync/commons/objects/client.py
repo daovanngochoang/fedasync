@@ -8,6 +8,7 @@ class Client:
         self.finish_time: str = ""
         self.loss: float = 1.0
         self.is_finished: bool = True
+        self.is_joined = False
 
     def reset(self):
         self.current_epoch = 0
@@ -17,6 +18,7 @@ class Client:
         self.finish_time = ""
         self.loss = 1.0
         self.is_finished = False
+        self.is_joined = False
 
     def __str__(self):
         return "{"+ "id: {}, current_epoch: {}, weight_fi" \

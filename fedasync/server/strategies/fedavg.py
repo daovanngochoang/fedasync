@@ -10,8 +10,8 @@ from fedasync.server.strategies import Strategy
 
 class FedAvg(Strategy, ABC):
 
-    def __init__(self, model, n_epochs: int = 3, min_update_clients: int = 3, min_fit_clients: int = 3,
-                 convergent_value: float = 0.1) -> None:
+    def __init__(self, model, n_epochs: int, min_update_clients: int, min_fit_clients: int,
+                 convergent_value: float) -> None:
         super().__init__(model, n_epochs, min_update_clients, min_fit_clients, convergent_value)
 
     def select_client(self, all_clients: Dict[str, Client]) -> List[str]:
@@ -42,4 +42,6 @@ class FedAvg(Strategy, ABC):
     def evaluate(self):
         pass
 
-
+    @abstractmethod
+    def data_preprocessing(self):
+        pass

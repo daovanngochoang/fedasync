@@ -6,6 +6,7 @@ from keras import datasets
 import pika
 
 from fedasync.client import ClientServer
+from fedasync.client.client_server import ClientConfig
 from fedasync.commons import Config
 from fedasync.commons.models import *
 from fedasync.commons.utils import save_array
@@ -20,6 +21,7 @@ Config.AWS_ACCESS_KEY_ID = "AKIARUCJKIXKV24ZV553"
 Config.AWS_SECRET_ACCESS_KEY = "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"
 Config.BUCKET_NAME = "fedasync"
 
+ClientConfig.cli_id = "hoangdao.1902093.worker3"
 
 class ClientTensorflow(ClientServer):
 

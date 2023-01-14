@@ -1,4 +1,7 @@
+import json
+import os
 from typing import Dict
+from fedasync.commons.config import Config
 from fedasync.commons.objects import UpdateMessage
 from fedasync.commons.objects import Client
 from fedasync.commons.utils import time_now
@@ -106,6 +109,7 @@ class ClientManager:
         if client is not None:
             self.client_pools[client_id] = Client(client_id)
 
+        # else we just update all client stage
         self.client_pools[client_id].weight_file = msg_obj.weight_file
         self.client_pools[client_id].current_epoch = msg_obj.epoch
         self.client_pools[client_id].acc = msg_obj.acc
@@ -114,8 +118,21 @@ class ClientManager:
         self.client_pools[client_id].finish_time = time_now()
         self.client_pools[client_id].is_finished = True
 
+    def save_late_update(self, msg_obj: UpdateMessage):
+        epoch = msg_obj.epoch
+        id = msg_obj.client_id
+        client: Client = self.history_state[epoch][id]
+        if client is not None:
+            self.history_state[epoch][id] = Client(id)
 
-
+        # else we just update all client stage
+        self.history_state[epoch][id].weight_file = msg_obj.weight_file
+        self.history_state[epoch][id].current_epoch = msg_obj.epoch
+        self.history_state[epoch][id].acc = msg_obj.acc
+        self.history_state[epoch][id].loss = msg_obj.loss
+        self.history_state[epoch][id].start_time = msg_obj.start
+        self.history_state[epoch][id].finish_time = time_now()
+        self.history_state[epoch][id].is_finished = True
 
     def get_available(self):
         """Get the number of available (finished) clients.
@@ -146,6 +163,16 @@ class ClientManager:
 
         self.history_state[epoch] = self.client_pools
 
+    def history_to_file(self):
+        """_summary_
+        """
+        path = Config.TMP_FOLDER + "history"
+        if not os.path.exists(path):
+            os.makedirs(path)
+        # write the json object to a text file
+        with open("history.txt", "w") as f:
+            json.dump(self.history_state, f)
+
     def reset_client_pools(self):
         """Reset the is_finished attribute of all clients in the client_pools attribute.
         """
@@ -155,7 +182,14 @@ class ClientManager:
             # reset all attribute
             client.reset()
 
-    def make_available(self, client_id):
+    def set_finished_status(self, client_id):
         for id in client_id:
             self.client_pools[id].is_finished = False
 
+    def get_joined_clients(self):
+        count = 0
+        for i in self.client_pools:
+            if self.client_pools[i].is_joined:
+                count += 1
+
+        return count
